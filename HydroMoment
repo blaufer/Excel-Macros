@@ -1,0 +1,108 @@
+Sub HydroMoment()
+    
+    'Add Sheets and Find Final Row
+    PLast = Sheets("Sheet").Cells.Find("*", SearchOrder:=xlByRows, SearchDirection:=xlPrevious).Row
+    Sheets.Add.Name = "Sheet1"
+    Sheets.Add.Name = "Sheet2"
+    
+    'Copy Sequence & Seperate
+    For x = 22 To PLast Step 1
+        Sheets("Sheet1").Range("A" & x - 21) = "=SUBSTITUTE('Sheet'!$I22,""(+15.99)"","""")"
+        Sheets("Sheet1").Range("A1").AutoFill Destination:=Sheets("Sheet1").Range("A1:A" & PLast), Type:=xlFillDefault
+        Sheets("Sheet1").Range("B" & x - 21).FormulaR1C1 = "=MID(RC1,COLUMN()-1,1)"
+    Next
+    Sheets("Sheet1").Range("B1").AutoFill Destination:=Sheets("Sheet1").Range("B1:CZ1"), Type:=xlFillDefault
+    Sheets("Sheet1").Range("B1:CZ1").AutoFill Destination:=Sheets("Sheet1").Range("B1:CZ" & PLast), Type:=xlFillDefault
+
+    'Change to Values Not Formula
+    Sheets("Sheet1").UsedRange.Copy
+    Sheets("Sheet2").Select
+    Selection.PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks:=False, Transpose:=False
+    Application.DisplayAlerts = False
+    Sheets("Sheet1").Delete
+    Application.DisplayAlerts = True
+    
+    'Replace Sequence with Values
+    Sheets("Sheet2").Range("B1:CZ" & PLast).Replace What:="*A*", Replacement:="0.31", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("Sheet2").Range("B1:CZ" & PLast).Replace What:="*C*", Replacement:="1.54", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("Sheet2").Range("B1:CZ" & PLast).Replace What:="*D*", Replacement:="-0.77", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("Sheet2").Range("B1:CZ" & PLast).Replace What:="*E*", Replacement:="-0.64", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("Sheet2").Range("B1:CZ" & PLast).Replace What:="*F*", Replacement:="1.79", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("Sheet2").Range("B1:CZ" & PLast).Replace What:="*G*", Replacement:="0", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("Sheet2").Range("B1:CZ" & PLast).Replace What:="*H*", Replacement:="0.13", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("Sheet2").Range("B1:CZ" & PLast).Replace What:="*I*", Replacement:="1.8", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("Sheet2").Range("B1:CZ" & PLast).Replace What:="*K*", Replacement:="-0.99", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("Sheet2").Range("B1:CZ" & PLast).Replace What:="*L*", Replacement:="1.7", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("Sheet2").Range("B1:CZ" & PLast).Replace What:="*M*", Replacement:="1.23", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("Sheet2").Range("B1:CZ" & PLast).Replace What:="*N*", Replacement:="-0.6", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("Sheet2").Range("B1:CZ" & PLast).Replace What:="*P*", Replacement:="0.72", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("Sheet2").Range("B1:CZ" & PLast).Replace What:="*Q*", Replacement:="-0.22", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("Sheet2").Range("B1:CZ" & PLast).Replace What:="*R*", Replacement:="-1.01", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("Sheet2").Range("B1:CZ" & PLast).Replace What:="*S*", Replacement:="-0.04", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("Sheet2").Range("B1:CZ" & PLast).Replace What:="*T*", Replacement:="0.26", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("Sheet2").Range("B1:CZ" & PLast).Replace What:="*V*", Replacement:="1.22", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("Sheet2").Range("B1:CZ" & PLast).Replace What:="*W*", Replacement:="2.25", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("Sheet2").Range("B1:CZ" & PLast).Replace What:="*Y*", Replacement:="0.96", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+
+    'Add n Value
+    Sheets("Sheet2").Range("A1").EntireColumn.Insert
+    Sheets("Sheet2").Range("A1").FormulaR1C1 = "=Sheet!R[21]C16"
+    Sheets("Sheet2").Range("A1").AutoFill Destination:=Range("A1:A" & PLast - 21), Type:=xlFillDefault
+    Sheets("Sheet2").Range("A1").EntireColumn.Insert
+    Sheets("Sheet2").Range("A1").EntireRow.Insert
+    Sheets("Sheet2").Range("D1").Value = 1
+    Sheets("Sheet2").Range("D1").AutoFill Destination:=Range("D1:DB1"), Type:=xlFillSeries
+    
+    'Insert Columns
+    For x = 104 To 5 Step -1
+        Sheets("Sheet2").Columns(x).EntireColumn.Insert
+        Sheets("Sheet2").Columns(x).EntireColumn.Insert
+    Next
+    Sheets("Sheet2").Range("A1").EntireColumn.Insert
+    
+    '1/n and Sin/Cos Formula
+    Sheets("Sheet2").Range("B2").Value = "=1/C2"
+    Sheets("Sheet2").Range("B2").AutoFill Destination:=Sheets("Sheet2").Range("B2:B" & PLast - 21), Type:=xlFillDefault
+    Sheets("Sheet2").Range("F2").Value = "=(E2*sin(radians(E$1*100)))"
+    Sheets("Sheet2").Range("F2").AutoFill Destination:=Sheets("Sheet2").Range("F2:F" & PLast - 21), Type:=xlFillDefault
+    Sheets("Sheet2").Range("G2").Value = "=(E2*cos(radians(E$1*100)))"
+    Sheets("Sheet2").Range("G2").AutoFill Destination:=Sheets("Sheet2").Range("G2:G" & PLast - 21), Type:=xlFillDefault
+    
+    'Copy Sin/Cos Formula Across Sheet
+    For x = 9 To 312 Step 3
+        For y = 2 To PLast Step 1
+            Sheets("Sheet2").Cells(y, 6).Copy
+            Sheets("Sheet2").Cells(y, x).PasteSpecial
+        Next
+    Next
+    For x = 10 To 313 Step 3
+        For y = 2 To PLast Step 1
+            Sheets("Sheet2").Cells(y, 7).Copy
+            Sheets("Sheet2").Cells(y, x).PasteSpecial
+        Next
+    Next
+    
+    'Add Sheet and Copy Values
+    Sheets.Add.Name = "Sheet3"
+    Sheets("Sheet2").UsedRange.Copy
+    Sheets("Sheet3").Select
+    Selection.PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks:=False, Transpose:=False
+    Application.DisplayAlerts = False
+    Sheets("Sheet2").Delete
+    Application.DisplayAlerts = True
+    Sheets("Sheet3").Range("A1:LB" & PLast).Replace What:="*#VALUE*", Replacement:="0", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    
+    'Insert Columns
+    Sheets("Sheet3").Range("A1").EntireColumn.Insert
+    Sheets("Sheet3").Range("A1").EntireColumn.Insert
+    Sheets("Sheet3").Range("A1").EntireColumn.Insert
+    
+    'Formula for Sumation and Final Calc
+    Sheets("Sheet3").Range("B2").Formula = "=(SUM(H2,K2,N2,Q2,T2,W2,Z2,AC2,AF2,AI2,AL2,AO2,AR2,AU2,AX2,BA2,BD2,BG2,BJ2,BM2,BP2,BS2,BV2,BY2,CB2,CE2,CH2,CK2,CN2,CQ2,CT2,CW2,CZ2,DC2,DF2,DI2,DL2,DO2,DR2,DU2,DX2,EA2,EC2,ED2,EG2,EJ2,EM2,EP2,ES2,EV2,EY2,FB2,FE2,FH2,FK2,FN2,FQ2,FT2,FW2,FZ2,GC2,GF2,GI2,GL2,GO2,GR2,GU2,GX2,HA2,HD2,HG2,HJ2,HM2,HP2,HS2,HV2,HY2,IB2,IE2,IH2,IK2,IN2,IQ2,IT2,IW2,IZ2,JC2,JF2,JI2,JL2,JO2,JR2,JU2,JX2,KA2,KD2,KG2,KJ2,KM2,KP2,KS2,KV2,KY2,LB2))^2"
+    Sheets("Sheet3").Range("B2").AutoFill Destination:=Range("B2:B" & PLast - 21), Type:=xlFillDefault
+    Sheets("Sheet3").Range("C2").Formula = "=(SUM(I2,L2,O2,R2,U2,X2,AA2,AD2,AG2,AJ2,AM2,AP2,AS2,AV2,AY2,BB2,BE2,BH2,BK2,BN2,BQ2,BT2,BW2,BZ2,CC2,CF2,CI2,CL2,CO2,CR2,CU2,CX2,DA2,DD2,DG2,DJ2,DM2,DP2,DS2,DV2,DY2,EB2,EE2,EH2,EK2,EN2,EQ2,ET2,EW2,EZ2,FC2,FF2,FI2,FL2,FO2,FR2,FU2,FX2,GA2,GD2,GG2,GJ2,GM2,GP2,GS2,GV2,GY2,HB2,HE2,HH2,HK2,HN2,HQ2,HT2,HW2,HZ2,IC2,IF2,II2,IL2,IO2,IR2,IU2,IX2,JA2,JD2,JG2,JJ2,JM2,JP2,JS2,JV2,JY2,KB2,KE2,KH2,KK2,KN2,KQ2,KT2,KW2,KZ2,LC2))^2"
+    Sheets("Sheet3").Range("C2").AutoFill Destination:=Range("C2:C" & PLast - 21), Type:=xlFillDefault
+    Sheets("Sheet3").Range("A2").Formula = "=D2*SQRT(B2+C2)"
+    Sheets("Sheet3").Range("A2").AutoFill Destination:=Range("A2:A" & PLast - 21), Type:=xlFillDefault
+    
+End Sub

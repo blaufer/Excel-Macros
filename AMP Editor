@@ -1,0 +1,536 @@
+Sub Editor()
+
+'Created by Brandon Laufer
+    Application.ScreenUpdating = False
+    
+    'Rename Original
+    ActiveSheet.Name = "Sheet"
+    
+    'Remove Rows and Extra Columns
+    RowLast = Cells.Find("*", SearchOrder:=xlByRows, SearchDirection:=xlPrevious).Row
+    Dim Modifications As Excel.Range
+    Dim Res As Excel.Range
+    Set Modifications = Range("A1:A" & RowLast).Find(What:="Modifications", LookIn:=xlValues)
+    Set Res = Range("A1:A" & RowLast).Find(What:="Results", LookIn:=xlValues)
+    If Not (Modifications Is Nothing) And Not (Res Is Nothing) Then
+        ActiveSheet.Range(Modifications, Res).EntireRow.Delete
+    End If
+    Range("A20").Select
+    ActiveCell.EntireRow.Insert
+    Range("A20").FormulaR1C1 = "Results"
+    Columns("M:AD").Select
+    Selection.Delete
+    
+    'Remove No Denovo &/or No Peak Seq
+    Sheets.Add.Name = "No DENOVO or Peak Seq"
+    Dim n As Long
+    Dim nLastRow As Long
+    Dim lastRow As Integer
+
+    Set r = Sheets("Sheet").UsedRange
+    nLastRow = r.rows.Count + r.Row - 1
+    
+    Dim a As Long: a = 1
+    With Sheets("Sheet")
+        For b = 22 To nLastRow Step 1
+            If .Range("G" & b) = "" Or .Range("I" & b) = "" Then
+                .Range("G" & b).EntireRow.Copy Sheets("No DENOVO or Peak Seq").Range("A" & a)
+                .Range("I" & b).EntireRow.Copy Sheets("No DENOVO or Peak Seq").Range("A" & a)
+                a = a + 1
+            End If
+        Next
+    End With
+    
+    For c = 1 To 100
+        Dim d As Long: d = 1
+        With Sheets("Sheet")
+            For e = 22 To nLastRow Step 1
+                If .Range("G" & e) = "" Or .Range("I" & e) = "" Then
+                    .Range("G" & e).EntireRow.Delete
+                    .Range("I" & e).EntireRow.Delete
+                    d = d + 1
+                End If
+            Next
+        End With
+        c = c + 1
+    Next
+    
+    'Add Column Titles to Original Output
+    Sheets("Sheet").Select
+    Range("N21").Select
+    ActiveCell.FormulaR1C1 = "pI"
+    Range("O21").Select
+    ActiveCell.FormulaR1C1 = "MW"
+    Range("P21").Select
+    ActiveCell.FormulaR1C1 = "Length"
+    Range("Q21").Select
+    ActiveCell.FormulaR1C1 = "Net Charge"
+    Range("R21").Select
+    ActiveCell.FormulaR1C1 = "Aliphatic"
+    Range("S21").Select
+    ActiveCell.FormulaR1C1 = "Hydrophobicity"
+    Range("T20").Select
+    ActiveCell.FormulaR1C1 = "SVM"
+    Range("T21").Select
+    ActiveCell.FormulaR1C1 = "Class"
+    Range("U21").Select
+    ActiveCell.FormulaR1C1 = "Amp Probability"
+    Range("V20").Select
+    ActiveCell.FormulaR1C1 = "RF"
+    Range("V21").Select
+    ActiveCell.FormulaR1C1 = "Class"
+    Range("W21").Select
+    ActiveCell.FormulaR1C1 = "AMP Probability"
+    Range("X20").Select
+    ActiveCell.FormulaR1C1 = "ANN"
+    Range("X21").Select
+    ActiveCell.FormulaR1C1 = "Class"
+    Range("Y20").Select
+    ActiveCell.FormulaR1C1 = "DA"
+    Range("Y21").Select
+    ActiveCell.FormulaR1C1 = "Class"
+    Range("Z21").Select
+    ActiveCell.FormulaR1C1 = "AMP Probability"
+    
+    'Remove Duplicates & Blanks
+    Sheets.Add.Name = "DENOVO"
+    Sheets.Add.Name = "Peaks"
+    Sheets("Sheet").UsedRange.Copy
+    Sheets("Peaks").Select
+    Selection.PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks:=False, Transpose:=False
+    Sheets("Sheet").UsedRange.Copy
+    Sheets("DENOVO").Select
+    Selection.PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks:=False, Transpose:=False
+    On Error Resume Next
+    Sheets("DENOVO").Range("G22:G" & nLastRow).RemoveDuplicates Columns:=1, Header:=xlNo
+    On Error Resume Next
+    Sheets("Peaks").Range("I22:I" & nLastRow).RemoveDuplicates Columns:=1, Header:=xlNo
+    On Error Resume Next
+    Sheets("DENOVO").Range("G22:G" & nLastRow).SpecialCells(xlCellTypeBlanks).EntireRow.Delete
+    On Error Resume Next
+    Sheets("Peaks").Range("I22:I" & nLastRow).SpecialCells(xlCellTypeBlanks).EntireRow.Delete
+
+    'Add Peaks FASTA Sheet
+    Sheets.Add.Name = "Peaks FASTA"
+    
+    'Add FASTA ID
+    RowLast = Sheets("Peaks").Cells.Find("*", SearchOrder:=xlByRows, SearchDirection:=xlPrevious).Row
+    Range("A1").Select
+    ActiveCell.FormulaR1C1 = "="">""&'Peaks'!R[21]C"
+    Range("A1").Select
+    Selection.AutoFill Destination:=Range("A1:A" & RowLast - 21), Type:=xlFillDefault
+    
+    'Add Peak Seq and Remove (+15.99)
+    Range("I1").Select
+    ActiveCell.FormulaR1C1 = "=SUBSTITUTE('Peaks'!R[21]C,""(+15.99)"","""")"
+    Range("I1").Select
+    Selection.AutoFill Destination:=Range("I1:I" & RowLast - 21), Type:=xlFillDefault
+    
+    'Add Spaces to FASTA Sheet
+    Selection.End(xlDown).Select
+         Do Until ActiveCell.Row = 1
+            ActiveCell.EntireRow.Insert Shift:=xlDown
+            ActiveCell.Offset(-1, 0).Select
+         Loop
+    
+    'Move Peaks Seq Down By One Row
+    Range("I1").Select
+    Selection.Insert Shift:=xlDown
+    
+    'Move Peaks Seq From Column I to A
+    RowLast = Cells.Find("*", SearchOrder:=xlByRows, SearchDirection:=xlPrevious).Row
+    For f = 2 To RowLast Step 2
+        Range("I" & f).Cut Range("A" & f)
+    Next
+    
+    'Add DENOVO FASTA Sheet
+    Sheets.Add.Name = "DENOVO FASTA"
+    
+    'Add FASTA ID
+    RowLast = Sheets("DENOVO").Cells.Find("*", SearchOrder:=xlByRows, SearchDirection:=xlPrevious).Row
+    Range("A1").Select
+    ActiveCell.FormulaR1C1 = "="">""&'DENOVO'!R[21]C"
+    Range("A1").Select
+    Selection.AutoFill Destination:=Range("A1:A" & RowLast - 21), Type:=xlFillDefault
+    
+    'Add DENOVO Seq and Remove (+15.99)
+    Range("G1").Select
+    ActiveCell.FormulaR1C1 = "=SUBSTITUTE('DENOVO'!R[21]C,""(+15.99)"","""")"
+    Range("G1").Select
+    Selection.AutoFill Destination:=Range("G1:G" & RowLast - 21), Type:=xlFillDefault
+    
+    'Add Spaces to FASTA Sheet
+    Selection.End(xlDown).Select
+         Do Until ActiveCell.Row = 1
+            ActiveCell.EntireRow.Insert Shift:=xlDown
+            ActiveCell.Offset(-1, 0).Select
+         Loop
+    
+    'Move Denovo Seq Down By One Row
+    Range("G1").Select
+    Selection.Insert Shift:=xlDown
+    
+    'Move Denovo Seq From Column G to A
+    RowLast = Cells.Find("*", SearchOrder:=xlByRows, SearchDirection:=xlPrevious).Row
+    For f = 2 To RowLast Step 2
+        Range("G" & f).Cut Range("A" & f)
+    Next
+    
+    'Add Sheets
+    Sheets.Add.Name = "Peaks Prediction Tool"
+    Sheets.Add.Name = "Peaks AMP Prediction"
+    Sheets.Add.Name = "DENOVO Prediction Tool"
+    Sheets.Add.Name = "DENOVO AMP Prediction"
+  
+'Calculations
+    'Total Rows & Add Sheets
+    PLast = Sheets("Sheet").Cells.Find("*", SearchOrder:=xlByRows, SearchDirection:=xlPrevious).Row
+    Sheets.Add.Name = "Peaks Calculations"
+    Sheets.Add.Name = "Peaks Hydrophobicity Calc"
+    Sheets.Add.Name = "Peaks Net Charge Calc"
+    Sheets.Add.Name = "Peaks Aliphatic Calc"
+    Sheets.Add.Name = "Peaks MW Calc"
+    Sheets.Add.Name = "DENOVO Calculations"
+    Sheets.Add.Name = "DENOVO Hydrophobicity Calc"
+    Sheets.Add.Name = "DENOVO Net Charge Calc"
+    Sheets.Add.Name = "DENOVO Aliphatic Calc"
+    Sheets.Add.Name = "DENOVO MW Calc"
+    Sheets.Add.Name = "Peaks Final"
+    Sheets.Add.Name = "DENOVO Final"
+    
+    Sheets("Peaks").UsedRange.Copy
+    Sheets("Peaks Final").Select
+    Selection.PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks:=False, Transpose:=False
+    Sheets("DENOVO").UsedRange.Copy
+    Sheets("DENOVO Final").Select
+    Selection.PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks:=False, Transpose:=False
+
+'Peaks Length, Hydrophobicity, Net Charge
+    'Move Sequences
+    For x = 22 To PLast Step 1
+        Sheets("Peaks Calculations").Range("C" & x - 21) = "=SUBSTITUTE('Peaks'!$I22,""(+15.99)"","""")"
+        Sheets("Peaks Calculations").Range("C1").AutoFill Destination:=Sheets("Peaks Calculations").Range("C1:C" & PLast - 21), Type:=xlFillDefault
+    Next
+    
+    'Find Length & Seperate Sequence
+    Sheets("Peaks Calculations").Range("B1") = "=LEN(C1)"
+    Sheets("Peaks Calculations").Range("B1").AutoFill Destination:=Sheets("Peaks Calculations").Range("B1:B" & PLast - 21), Type:=xlFillDefault
+    For x = 1 To PLast Step 1
+        Sheets("Peaks Calculations").Range("D1").FormulaR1C1 = "=MID(RC3,COLUMN()-3,1)"
+    Next
+    Sheets("Peaks Calculations").Range("D1").AutoFill Destination:=Sheets("Peaks Calculations").Range("D1:CZ1"), Type:=xlFillDefault
+    Sheets("Peaks Calculations").Range("D1:CZ1").AutoFill Destination:=Sheets("Peaks Calculations").Range("D1:CZ" & PLast - 21), Type:=xlFillDefault
+    
+    'Copy To Sheets
+    Sheets("Peaks Calculations").UsedRange.Copy
+    Sheets("Peaks Hydrophobicity Calc").Select
+    Selection.PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks:=False, Transpose:=False
+    Sheets("Peaks Calculations").UsedRange.Copy
+    Sheets("Peaks Net Charge Calc").Select
+    Selection.PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks:=False, Transpose:=False
+    Sheets("Peaks Hydrophobicity Calc").Range("A1").EntireColumn.Insert
+    Sheets("Peaks Net Charge Calc").Range("A1").EntireColumn.Insert
+    Sheets("Peaks Calculations").UsedRange.Copy
+    Sheets("Peaks Aliphatic Calc").Select
+    Selection.PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks:=False, Transpose:=False
+    Sheets("Peaks Calculations").UsedRange.Copy
+    Sheets("Peaks MW Calc").Select
+    Selection.PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks:=False, Transpose:=False
+    Sheets("Peaks MW Calc").Range("A1").EntireColumn.Insert
+    Application.DisplayAlerts = False
+    Sheets("Peaks Calculations").Delete
+    Application.DisplayAlerts = True
+    Sheets("Peaks Aliphatic Calc").Range("A1").EntireColumn.Insert
+    Sheets("Peaks Aliphatic Calc").Range("A1").EntireColumn.Insert
+    Sheets("Peaks Aliphatic Calc").Range("A1").EntireColumn.Insert
+    Sheets("Peaks Aliphatic Calc").Range("A1").EntireColumn.Insert
+    
+    'Hydrophobicity Calculations
+    Sheets("Peaks Hydrophobicity Calc").Range("D1:CZ" & PLast).Replace What:="*A*", Replacement:="0.31", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("Peaks Hydrophobicity Calc").Range("D1:CZ" & PLast).Replace What:="*C*", Replacement:="1.54", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("Peaks Hydrophobicity Calc").Range("D1:CZ" & PLast).Replace What:="*D*", Replacement:="-0.77", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("Peaks Hydrophobicity Calc").Range("D1:CZ" & PLast).Replace What:="*E*", Replacement:="-0.64", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("Peaks Hydrophobicity Calc").Range("D1:CZ" & PLast).Replace What:="*F*", Replacement:="1.79", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("Peaks Hydrophobicity Calc").Range("D1:CZ" & PLast).Replace What:="*G*", Replacement:="0", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("Peaks Hydrophobicity Calc").Range("D1:CZ" & PLast).Replace What:="*H*", Replacement:="0.13", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("Peaks Hydrophobicity Calc").Range("D1:CZ" & PLast).Replace What:="*I*", Replacement:="1.8", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("Peaks Hydrophobicity Calc").Range("D1:CZ" & PLast).Replace What:="*K*", Replacement:="-0.99", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("Peaks Hydrophobicity Calc").Range("D1:CZ" & PLast).Replace What:="*L*", Replacement:="1.7", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("Peaks Hydrophobicity Calc").Range("D1:CZ" & PLast).Replace What:="*M*", Replacement:="1.23", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("Peaks Hydrophobicity Calc").Range("D1:CZ" & PLast).Replace What:="*N*", Replacement:="-0.6", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("Peaks Hydrophobicity Calc").Range("D1:CZ" & PLast).Replace What:="*P*", Replacement:="0.72", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("Peaks Hydrophobicity Calc").Range("D1:CZ" & PLast).Replace What:="*Q*", Replacement:="-0.22", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("Peaks Hydrophobicity Calc").Range("D1:CZ" & PLast).Replace What:="*R*", Replacement:="-1.01", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("Peaks Hydrophobicity Calc").Range("D1:CZ" & PLast).Replace What:="*S*", Replacement:="-0.04", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("Peaks Hydrophobicity Calc").Range("D1:CZ" & PLast).Replace What:="*T*", Replacement:="0.26", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("Peaks Hydrophobicity Calc").Range("D1:CZ" & PLast).Replace What:="*V*", Replacement:="1.22", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("Peaks Hydrophobicity Calc").Range("D1:CZ" & PLast).Replace What:="*W*", Replacement:="2.25", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("Peaks Hydrophobicity Calc").Range("D1:CZ" & PLast).Replace What:="*Y*", Replacement:="0.96", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+
+    Sheets("Peaks Hydrophobicity Calc").Range("A1") = "=SUM(D1:CZ1)*(1/B1)"
+    Sheets("Peaks Hydrophobicity Calc").Range("A1").AutoFill Destination:=Sheets("Peaks Hydrophobicity Calc").Range("A1:A" & PLast - 21), Type:=xlFillDefault
+    
+    'Net Charge Calculations
+    Sheets("Peaks Net Charge Calc").Range("D1:CZ" & PLast).Replace What:="*A*", Replacement:="0", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("Peaks Net Charge Calc").Range("D1:CZ" & PLast).Replace What:="*C*", Replacement:="0", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("Peaks Net Charge Calc").Range("D1:CZ" & PLast).Replace What:="*D*", Replacement:="-1", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("Peaks Net Charge Calc").Range("D1:CZ" & PLast).Replace What:="*E*", Replacement:="-1", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("Peaks Net Charge Calc").Range("D1:CZ" & PLast).Replace What:="*F*", Replacement:="0", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("Peaks Net Charge Calc").Range("D1:CZ" & PLast).Replace What:="*G*", Replacement:="0", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("Peaks Net Charge Calc").Range("D1:CZ" & PLast).Replace What:="*H*", Replacement:="0", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("Peaks Net Charge Calc").Range("D1:CZ" & PLast).Replace What:="*I*", Replacement:="0", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("Peaks Net Charge Calc").Range("D1:CZ" & PLast).Replace What:="*K*", Replacement:="1", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("Peaks Net Charge Calc").Range("D1:CZ" & PLast).Replace What:="*L*", Replacement:="0", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("Peaks Net Charge Calc").Range("D1:CZ" & PLast).Replace What:="*M*", Replacement:="0", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("Peaks Net Charge Calc").Range("D1:CZ" & PLast).Replace What:="*N*", Replacement:="0", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("Peaks Net Charge Calc").Range("D1:CZ" & PLast).Replace What:="*P*", Replacement:="0", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("Peaks Net Charge Calc").Range("D1:CZ" & PLast).Replace What:="*Q*", Replacement:="0", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("Peaks Net Charge Calc").Range("D1:CZ" & PLast).Replace What:="*R*", Replacement:="1", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("Peaks Net Charge Calc").Range("D1:CZ" & PLast).Replace What:="*S*", Replacement:="0", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("Peaks Net Charge Calc").Range("D1:CZ" & PLast).Replace What:="*T*", Replacement:="0", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("Peaks Net Charge Calc").Range("D1:CZ" & PLast).Replace What:="*V*", Replacement:="0", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("Peaks Net Charge Calc").Range("D1:CZ" & PLast).Replace What:="*W*", Replacement:="0", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("Peaks Net Charge Calc").Range("D1:CZ" & PLast).Replace What:="*Y*", Replacement:="0", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+
+    Sheets("Peaks Net Charge Calc").Range("A1") = "=SUM(D1:CZ1)"
+    Sheets("Peaks Net Charge Calc").Range("A1").AutoFill Destination:=Sheets("Peaks Net Charge Calc").Range("A1:A" & PLast - 21), Type:=xlFillDefault
+
+    'Aliphatic Calculations
+    Sheets("Peaks Aliphatic Calc").Range("B1") = "=COUNTIF(G1:CZ1,""A"")"
+    Sheets("Peaks Aliphatic Calc").Range("B1").AutoFill Destination:=Sheets("Peaks Aliphatic Calc").Range("B1:B" & PLast - 21), Type:=xlFillDefault
+    Sheets("Peaks Aliphatic Calc").Range("C1") = "=COUNTIF(G1:CZ1,""V"")"
+    Sheets("Peaks Aliphatic Calc").Range("C1").AutoFill Destination:=Sheets("Peaks Aliphatic Calc").Range("C1:C" & PLast - 21), Type:=xlFillDefault
+    Sheets("Peaks Aliphatic Calc").Range("D1") = "=COUNTIF(G1:CZ1,""I"")"
+    Sheets("Peaks Aliphatic Calc").Range("D1").AutoFill Destination:=Sheets("Peaks Aliphatic Calc").Range("D1:D" & PLast - 21), Type:=xlFillDefault
+    Sheets("Peaks Aliphatic Calc").Range("E1") = "=COUNTIF(G1:CZ1,""L"")"
+    Sheets("Peaks Aliphatic Calc").Range("E1").AutoFill Destination:=Sheets("Peaks Aliphatic Calc").Range("E1:E" & PLast - 21), Type:=xlFillDefault
+    Sheets("Peaks Aliphatic Calc").Range("A1") = "=B1+2.9*C1+3.9*(D1+E1)"
+    Sheets("Peaks Aliphatic Calc").Range("A1").AutoFill Destination:=Sheets("Peaks Aliphatic Calc").Range("A1:A" & PLast - 21), Type:=xlFillDefault
+
+    'MW Calculations
+    Sheets("Peaks MW Calc").Range("D1:CZ" & PLast).Replace What:="*A*", Replacement:="89.0935", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("Peaks MW Calc").Range("D1:CZ" & PLast).Replace What:="*C*", Replacement:="121.1590", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("Peaks MW Calc").Range("D1:CZ" & PLast).Replace What:="*D*", Replacement:="133.1032", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("Peaks MW Calc").Range("D1:CZ" & PLast).Replace What:="*E*", Replacement:="147.1299", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("Peaks MW Calc").Range("D1:CZ" & PLast).Replace What:="*F*", Replacement:="165.1900", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("Peaks MW Calc").Range("D1:CZ" & PLast).Replace What:="*G*", Replacement:="75.0669", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("Peaks MW Calc").Range("D1:CZ" & PLast).Replace What:="*H*", Replacement:="155.1552", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("Peaks MW Calc").Range("D1:CZ" & PLast).Replace What:="*I*", Replacement:="131.1736", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("Peaks MW Calc").Range("D1:CZ" & PLast).Replace What:="*K*", Replacement:="146.1882", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("Peaks MW Calc").Range("D1:CZ" & PLast).Replace What:="*L*", Replacement:="131.1736", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("Peaks MW Calc").Range("D1:CZ" & PLast).Replace What:="*M*", Replacement:="149.2124", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("Peaks MW Calc").Range("D1:CZ" & PLast).Replace What:="*N*", Replacement:="132.1184", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("Peaks MW Calc").Range("D1:CZ" & PLast).Replace What:="*P*", Replacement:="115.1310", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("Peaks MW Calc").Range("D1:CZ" & PLast).Replace What:="*Q*", Replacement:="146.1451", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("Peaks MW Calc").Range("D1:CZ" & PLast).Replace What:="*R*", Replacement:="174.2017", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("Peaks MW Calc").Range("D1:CZ" & PLast).Replace What:="*S*", Replacement:="105.0930", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("Peaks MW Calc").Range("D1:CZ" & PLast).Replace What:="*T*", Replacement:="119.1197", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("Peaks MW Calc").Range("D1:CZ" & PLast).Replace What:="*V*", Replacement:="117.1469", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("Peaks MW Calc").Range("D1:CZ" & PLast).Replace What:="*W*", Replacement:="204.2262", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("Peaks MW Calc").Range("D1:CZ" & PLast).Replace What:="*Y*", Replacement:="181.1894", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+
+    Sheets("Peaks MW Calc").Range("A1") = "=SUM(D1:CZ1)-B1*18.01528"
+    Sheets("Peaks MW Calc").Range("A1").AutoFill Destination:=Sheets("Peaks MW Calc").Range("A1:A" & PLast - 21), Type:=xlFillDefault
+
+'Created by Brandon Laufer
+
+'DENOVO Length, Hydrophobicity, Net Charge
+    'Move Sequences
+    For x = 22 To PLast Step 1
+        Sheets("DENOVO Calculations").Range("C" & x - 21) = "=SUBSTITUTE('DENOVO'!$G22,""(+15.99)"","""")"
+        Sheets("DENOVO Calculations").Range("C1").AutoFill Destination:=Sheets("DENOVO Calculations").Range("C1:C" & PLast - 21), Type:=xlFillDefault
+    Next
+    
+    'Find Length & Seperate Sequence
+    Sheets("DENOVO Calculations").Range("B1") = "=LEN(C1)"
+    Sheets("DENOVO Calculations").Range("B1").AutoFill Destination:=Sheets("DENOVO Calculations").Range("B1:B" & PLast - 21), Type:=xlFillDefault
+    For x = 1 To PLast Step 1
+        Sheets("DENOVO Calculations").Range("D1").FormulaR1C1 = "=MID(RC3,COLUMN()-3,1)"
+    Next
+    Sheets("DENOVO Calculations").Range("D1").AutoFill Destination:=Sheets("DENOVO Calculations").Range("D1:CZ1"), Type:=xlFillDefault
+    Sheets("DENOVO Calculations").Range("D1:CZ1").AutoFill Destination:=Sheets("DENOVO Calculations").Range("D1:CZ" & PLast - 21), Type:=xlFillDefault
+    
+    'Copy To Sheets & Remove Unnecessary Sheets
+    Sheets("DENOVO Calculations").UsedRange.Copy
+    Sheets("DENOVO Hydrophobicity Calc").Select
+    Selection.PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks:=False, Transpose:=False
+    Sheets("DENOVO Calculations").UsedRange.Copy
+    Sheets("DENOVO Net Charge Calc").Select
+    Selection.PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks:=False, Transpose:=False
+    Sheets("DENOVO Hydrophobicity Calc").Range("A1").EntireColumn.Insert
+    Sheets("DENOVO Net Charge Calc").Range("A1").EntireColumn.Insert
+    Sheets("DENOVO Calculations").UsedRange.Copy
+    Sheets("DENOVO Aliphatic Calc").Select
+    Selection.PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks:=False, Transpose:=False
+    Sheets("DENOVO MW Calc").Select
+    Selection.PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks:=False, Transpose:=False
+    Sheets("DENOVO MW Calc").Range("A1").EntireColumn.Insert
+    Application.DisplayAlerts = False
+    Sheets("DENOVO Calculations").Delete
+    Application.DisplayAlerts = True
+    Sheets("DENOVO Aliphatic Calc").Range("A1").EntireColumn.Insert
+    Sheets("DENOVO Aliphatic Calc").Range("A1").EntireColumn.Insert
+    Sheets("DENOVO Aliphatic Calc").Range("A1").EntireColumn.Insert
+    Sheets("DENOVO Aliphatic Calc").Range("A1").EntireColumn.Insert
+    
+    'Hydrophobicity Calculations
+    Sheets("DENOVO Hydrophobicity Calc").Range("D1:CZ" & PLast).Replace What:="*A*", Replacement:="0.31", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("DENOVO Hydrophobicity Calc").Range("D1:CZ" & PLast).Replace What:="*C*", Replacement:="1.54", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("DENOVO Hydrophobicity Calc").Range("D1:CZ" & PLast).Replace What:="*D*", Replacement:="-0.77", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("DENOVO Hydrophobicity Calc").Range("D1:CZ" & PLast).Replace What:="*E*", Replacement:="-0.64", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("DENOVO Hydrophobicity Calc").Range("D1:CZ" & PLast).Replace What:="*F*", Replacement:="1.79", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("DENOVO Hydrophobicity Calc").Range("D1:CZ" & PLast).Replace What:="*G*", Replacement:="0", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("DENOVO Hydrophobicity Calc").Range("D1:CZ" & PLast).Replace What:="*H*", Replacement:="0.13", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("DENOVO Hydrophobicity Calc").Range("D1:CZ" & PLast).Replace What:="*I*", Replacement:="1.8", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("DENOVO Hydrophobicity Calc").Range("D1:CZ" & PLast).Replace What:="*K*", Replacement:="-0.99", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("DENOVO Hydrophobicity Calc").Range("D1:CZ" & PLast).Replace What:="*L*", Replacement:="1.7", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("DENOVO Hydrophobicity Calc").Range("D1:CZ" & PLast).Replace What:="*M*", Replacement:="1.23", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("DENOVO Hydrophobicity Calc").Range("D1:CZ" & PLast).Replace What:="*N*", Replacement:="-0.6", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("DENOVO Hydrophobicity Calc").Range("D1:CZ" & PLast).Replace What:="*P*", Replacement:="0.72", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("DENOVO Hydrophobicity Calc").Range("D1:CZ" & PLast).Replace What:="*Q*", Replacement:="-0.22", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("DENOVO Hydrophobicity Calc").Range("D1:CZ" & PLast).Replace What:="*R*", Replacement:="-1.01", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("DENOVO Hydrophobicity Calc").Range("D1:CZ" & PLast).Replace What:="*S*", Replacement:="-0.04", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("DENOVO Hydrophobicity Calc").Range("D1:CZ" & PLast).Replace What:="*T*", Replacement:="0.26", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("DENOVO Hydrophobicity Calc").Range("D1:CZ" & PLast).Replace What:="*V*", Replacement:="1.22", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("DENOVO Hydrophobicity Calc").Range("D1:CZ" & PLast).Replace What:="*W*", Replacement:="2.25", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("DENOVO Hydrophobicity Calc").Range("D1:CZ" & PLast).Replace What:="*Y*", Replacement:="0.96", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+
+    Sheets("DENOVO Hydrophobicity Calc").Range("A1") = "=SUM(D1:CZ1)*(1/B1)"
+    Sheets("DENOVO Hydrophobicity Calc").Range("A1").AutoFill Destination:=Sheets("DENOVO Hydrophobicity Calc").Range("A1:A" & PLast - 21), Type:=xlFillDefault
+    
+    'Net Charge Calculations
+    Sheets("DENOVO Net Charge Calc").Range("D1:CZ" & PLast).Replace What:="*A*", Replacement:="0", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("DENOVO Net Charge Calc").Range("D1:CZ" & PLast).Replace What:="*C*", Replacement:="0", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("DENOVO Net Charge Calc").Range("D1:CZ" & PLast).Replace What:="*D*", Replacement:="-1", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("DENOVO Net Charge Calc").Range("D1:CZ" & PLast).Replace What:="*E*", Replacement:="-1", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("DENOVO Net Charge Calc").Range("D1:CZ" & PLast).Replace What:="*F*", Replacement:="0", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("DENOVO Net Charge Calc").Range("D1:CZ" & PLast).Replace What:="*G*", Replacement:="0", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("DENOVO Net Charge Calc").Range("D1:CZ" & PLast).Replace What:="*H*", Replacement:="0", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("DENOVO Net Charge Calc").Range("D1:CZ" & PLast).Replace What:="*I*", Replacement:="0", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("DENOVO Net Charge Calc").Range("D1:CZ" & PLast).Replace What:="*K*", Replacement:="1", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("DENOVO Net Charge Calc").Range("D1:CZ" & PLast).Replace What:="*L*", Replacement:="0", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("DENOVO Net Charge Calc").Range("D1:CZ" & PLast).Replace What:="*M*", Replacement:="0", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("DENOVO Net Charge Calc").Range("D1:CZ" & PLast).Replace What:="*N*", Replacement:="0", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("DENOVO Net Charge Calc").Range("D1:CZ" & PLast).Replace What:="*P*", Replacement:="0", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("DENOVO Net Charge Calc").Range("D1:CZ" & PLast).Replace What:="*Q*", Replacement:="0", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("DENOVO Net Charge Calc").Range("D1:CZ" & PLast).Replace What:="*R*", Replacement:="1", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("DENOVO Net Charge Calc").Range("D1:CZ" & PLast).Replace What:="*S*", Replacement:="0", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("DENOVO Net Charge Calc").Range("D1:CZ" & PLast).Replace What:="*T*", Replacement:="0", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("DENOVO Net Charge Calc").Range("D1:CZ" & PLast).Replace What:="*V*", Replacement:="0", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("DENOVO Net Charge Calc").Range("D1:CZ" & PLast).Replace What:="*W*", Replacement:="0", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("DENOVO Net Charge Calc").Range("D1:CZ" & PLast).Replace What:="*Y*", Replacement:="0", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+
+    Sheets("DENOVO Net Charge Calc").Range("A1") = "=SUM(D1:CZ1)"
+    Sheets("DENOVO Net Charge Calc").Range("A1").AutoFill Destination:=Sheets("DENOVO Net Charge Calc").Range("A1:A" & PLast - 21), Type:=xlFillDefault
+    
+    'Aliphatic Calculations
+    Sheets("DENOVO Aliphatic Calc").Range("B1") = "=COUNTIF(G1:CZ1,""A"")"
+    Sheets("DENOVO Aliphatic Calc").Range("B1").AutoFill Destination:=Sheets("DENOVO Aliphatic Calc").Range("B1:B" & PLast - 21), Type:=xlFillDefault
+    Sheets("DENOVO Aliphatic Calc").Range("C1") = "=COUNTIF(G1:CZ1,""V"")"
+    Sheets("DENOVO Aliphatic Calc").Range("C1").AutoFill Destination:=Sheets("DENOVO Aliphatic Calc").Range("C1:C" & PLast - 21), Type:=xlFillDefault
+    Sheets("DENOVO Aliphatic Calc").Range("D1") = "=COUNTIF(G1:CZ1,""I"")"
+    Sheets("DENOVO Aliphatic Calc").Range("D1").AutoFill Destination:=Sheets("DENOVO Aliphatic Calc").Range("D1:D" & PLast - 21), Type:=xlFillDefault
+    Sheets("DENOVO Aliphatic Calc").Range("E1") = "=COUNTIF(G1:CZ1,""L"")"
+    Sheets("DENOVO Aliphatic Calc").Range("E1").AutoFill Destination:=Sheets("DENOVO Aliphatic Calc").Range("E1:E" & PLast - 21), Type:=xlFillDefault
+    Sheets("DENOVO Aliphatic Calc").Range("A1") = "=B1+2.9*C1+3.9*(D1+E1)"
+    Sheets("DENOVO Aliphatic Calc").Range("A1").AutoFill Destination:=Sheets("DENOVO Aliphatic Calc").Range("A1:A" & PLast - 21), Type:=xlFillDefault
+    
+    'MW Calculations
+    Sheets("DENOVO MW Calc").Range("D1:CZ" & PLast).Replace What:="*A*", Replacement:="89.0935", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("DENOVO MW Calc").Range("D1:CZ" & PLast).Replace What:="*C*", Replacement:="121.1590", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("DENOVO MW Calc").Range("D1:CZ" & PLast).Replace What:="*D*", Replacement:="133.1032", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("DENOVO MW Calc").Range("D1:CZ" & PLast).Replace What:="*E*", Replacement:="147.1299", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("DENOVO MW Calc").Range("D1:CZ" & PLast).Replace What:="*F*", Replacement:="165.1900", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("DENOVO MW Calc").Range("D1:CZ" & PLast).Replace What:="*G*", Replacement:="75.0669", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("DENOVO MW Calc").Range("D1:CZ" & PLast).Replace What:="*H*", Replacement:="155.1552", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("DENOVO MW Calc").Range("D1:CZ" & PLast).Replace What:="*I*", Replacement:="131.1736", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("DENOVO MW Calc").Range("D1:CZ" & PLast).Replace What:="*K*", Replacement:="146.1882", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("DENOVO MW Calc").Range("D1:CZ" & PLast).Replace What:="*L*", Replacement:="131.1736", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("DENOVO MW Calc").Range("D1:CZ" & PLast).Replace What:="*M*", Replacement:="149.2124", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("DENOVO MW Calc").Range("D1:CZ" & PLast).Replace What:="*N*", Replacement:="132.1184", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("DENOVO MW Calc").Range("D1:CZ" & PLast).Replace What:="*P*", Replacement:="115.1310", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("DENOVO MW Calc").Range("D1:CZ" & PLast).Replace What:="*Q*", Replacement:="146.1451", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("DENOVO MW Calc").Range("D1:CZ" & PLast).Replace What:="*R*", Replacement:="174.2017", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("DENOVO MW Calc").Range("D1:CZ" & PLast).Replace What:="*S*", Replacement:="105.0930", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("DENOVO MW Calc").Range("D1:CZ" & PLast).Replace What:="*T*", Replacement:="119.1197", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("DENOVO MW Calc").Range("D1:CZ" & PLast).Replace What:="*V*", Replacement:="117.1469", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("DENOVO MW Calc").Range("D1:CZ" & PLast).Replace What:="*W*", Replacement:="204.2262", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+    Sheets("DENOVO MW Calc").Range("D1:CZ" & PLast).Replace What:="*Y*", Replacement:="181.1894", LookAt:=xlPart, SearchOrder:=xlByRows, MatchCase:=False
+
+    Sheets("DENOVO MW Calc").Range("A1") = "=SUM(D1:CZ1)-B1*18.01528"
+    Sheets("DENOVO MW Calc").Range("A1").AutoFill Destination:=Sheets("DENOVO MW Calc").Range("A1:A" & PLast - 21), Type:=xlFillDefault
+
+'Move To Final
+    'Move Peaks Values
+    Sheets("Peaks Hydrophobicity Calc").Range("B1:B" & PLast - 21).Copy
+    Sheets("Peaks Final").Range("P22:P" & PLast).PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks:=False, Transpose:=False
+    Sheets("Peaks Hydrophobicity Calc").Range("A1:A" & PLast - 21).Copy
+    Sheets("Peaks Final").Range("S22:S" & PLast).PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks:=False, Transpose:=False
+    Sheets("Peaks Aliphatic Calc").Range("A1:A" & PLast - 21).Copy
+    Sheets("Peaks Final").Range("R22:R" & PLast).PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks:=False, Transpose:=False
+    Sheets("Peaks Net Charge Calc").Range("A1:A" & PLast - 21).Copy
+    Sheets("Peaks Final").Range("Q22:Q" & PLast).PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks:=False, Transpose:=False
+    Sheets("Peaks MW Calc").Range("A1:A" & PLast - 21).Copy
+    Sheets("Peaks Final").Range("O22:O" & PLast).PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks:=False, Transpose:=False
+
+    'Move DENOVO Values
+    Sheets("DENOVO Hydrophobicity Calc").Range("B1:B" & PLast - 21).Copy
+    Sheets("DENOVO Final").Range("P22:P" & PLast).PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks:=False, Transpose:=False
+    Sheets("DENOVO Hydrophobicity Calc").Range("A1:A" & PLast - 21).Copy
+    Sheets("DENOVO Final").Range("S22:S" & PLast).PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks:=False, Transpose:=False
+    Sheets("DENOVO Aliphatic Calc").Range("A1:A" & PLast - 21).Copy
+    Sheets("DENOVO Final").Range("R22:R" & PLast).PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks:=False, Transpose:=False
+    Sheets("DENOVO Net Charge Calc").Range("A1:A" & PLast - 21).Copy
+    Sheets("DENOVO Final").Range("Q22:Q" & PLast).PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks:=False, Transpose:=False
+    Sheets("DENOVO MW Calc").Range("A1:A" & PLast - 21).Copy
+    Sheets("DENOVO Final").Range("O22:O" & PLast).PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks:=False, Transpose:=False
+
+    'Delete Extra Sheets
+    Application.DisplayAlerts = False
+    Sheets("Peaks Hydrophobicity Calc").Delete
+    Application.DisplayAlerts = True
+    Application.DisplayAlerts = False
+    Sheets("Peaks Aliphatic Calc").Delete
+    Application.DisplayAlerts = True
+    Application.DisplayAlerts = False
+    Sheets("Peaks Net Charge Calc").Delete
+    Application.DisplayAlerts = True
+    Application.DisplayAlerts = False
+    Sheets("Peaks MW Calc").Delete
+    Application.DisplayAlerts = True
+    Application.DisplayAlerts = False
+    Sheets("DENOVO Hydrophobicity Calc").Delete
+    Application.DisplayAlerts = True
+    Application.DisplayAlerts = False
+    Sheets("DENOVO Aliphatic Calc").Delete
+    Application.DisplayAlerts = True
+    Application.DisplayAlerts = False
+    Sheets("DENOVO Net Charge Calc").Delete
+    Application.DisplayAlerts = True
+    Application.DisplayAlerts = False
+    Sheets("DENOVO MW Calc").Delete
+    Application.DisplayAlerts = True
+
+'Charge Density
+    'Peaks
+    Sheets("Peaks Final").Range("M1").EntireColumn.Delete
+    Sheets("Peaks Final").Range("Q1").EntireColumn.Insert
+    Sheets("Peaks Final").Range("Q21") = "Charge per Residue"
+    Sheets("Peaks Final").Range("Q22") = "=P22/O22"
+    Sheets("Peaks Final").Range("Q22").AutoFill Destination:=Sheets("Peaks Final").Range("Q22:Q" & PLast), Type:=xlFillDefault
+
+    'DENOVO
+    Sheets("DENOVO Final").Column("M1").EntireColumn.Delete
+    Sheets("DENOVO Final").Column("Q1").EntireColumn.Insert
+    Sheets("DENOVO Final").Range("Q21") = "Charge per Residue"
+    Sheets("DENOVO Final").Range("Q22") = "=P22/O22"
+    Sheets("DENOVO Final").Range("Q22").AutoFill Destination:=Sheets("DENOVO Final").Range("Q22:Q" & PLast), Type:=xlFillDefault
+
+'Selects sheet for presentation
+    Sheets("Peaks Final").Select
+    
+    Application.ScreenUpdating = True
+    
+'Created by Brandon Laufer
+
+End Sub

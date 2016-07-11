@@ -1,0 +1,282 @@
+Sub Finalizer()
+
+'Created by Brandon Laufer
+    Application.ScreenUpdating = False
+
+'Peaks Final Output
+    'Remove Spaces From Prediction Tool Output
+    Sheets("Peaks Prediction Tool").Select
+    lastRow = ActiveSheet.Cells.Find("*", SearchOrder:=xlByRows, SearchDirection:=xlPrevious).Row
+    Range("B1").Delete Shift:=xlUp
+    Range("C1").Delete Shift:=xlUp
+    Dim r As Range, rows As Long, i As Long
+    Set r = ActiveSheet.Range("A1:C" & lastRow)
+    rows = r.rows.Count
+    For i = rows To 1 Step (-1)
+        If WorksheetFunction.CountA(r.rows(i)) = 0 Then r.rows(i).Delete
+    Next
+    
+    'Find Final Row of Peaks Final
+    RowLast = Sheets("Peaks Final").Cells.Find("*", SearchOrder:=xlByRows, SearchDirection:=xlPrevious).Row
+
+    'Transfer pI/MW
+    Sheets("Peaks Final").Range("N22:N" & RowLast).Value = Sheets("Peaks Prediction Tool").Range("B1:B" & RowLast).Value
+    Sheets("Peaks Final").Range("O22:O" & RowLast).Value = Sheets("Peaks Prediction Tool").Range("C1:C" & RowLast).Value
+    
+    'Transfer SVM
+    Sheets("Peaks Final").Range("T22:T" & RowLast).Value = Sheets("Peaks AMP Prediction").Range("B1:B" & RowLast).Value
+    Sheets("Peaks Final").Range("U22:U" & RowLast).Value = Sheets("Peaks AMP Prediction").Range("C1:C" & RowLast).Value
+    
+    'Transfer RF
+    Sheets("Peaks Final").Range("V22:V" & RowLast).Value = Sheets("Peaks AMP Prediction").Range("E1:E" & RowLast).Value
+    Sheets("Peaks Final").Range("W22:W" & RowLast).Value = Sheets("Peaks AMP Prediction").Range("F1:F" & RowLast).Value
+
+    'Transfer ANN
+    Sheets("Peaks Final").Range("X22:X" & RowLast).Value = Sheets("Peaks AMP Prediction").Range("H1:H" & RowLast).Value
+
+    'Transfer DA
+    Sheets("Peaks Final").Range("Y22:Y" & RowLast).Value = Sheets("Peaks AMP Prediction").Range("J1:J" & RowLast).Value
+    Sheets("Peaks Final").Range("Z22:Z" & RowLast).Value = Sheets("Peaks AMP Prediction").Range("K1:K" & RowLast).Value
+
+    'Column Width & Borders
+    Sheets("Peaks Final").Select
+    Columns("A:Z").AutoFit
+    RowLast = Sheets("Peaks Final").Cells.Find("*", SearchOrder:=xlByRows, SearchDirection:=xlPrevious).Row
+    Sheets("Peaks Final").Range("A21:Z" & RowLast).Select
+    With Selection.Borders
+        .LineStyle = xlContinuous
+        .ColorIndex = 0
+        .Weight = xlThin
+    End With
+    
+    'Delete Excess Sheets
+    Application.DisplayAlerts = False
+    Sheets("Peaks Prediction Tool").Delete
+    Application.DisplayAlerts = True
+    Application.DisplayAlerts = False
+    Sheets("Peaks AMP Prediction").Delete
+    Application.DisplayAlerts = True
+
+    'Color Change
+    Sheets("Peaks Final").Cells.Select
+    Selection.FormatConditions.Add Type:=xlCellValue, Operator:=xlEqual, _
+        Formula1:="=""AMP"""
+    Selection.FormatConditions(Selection.FormatConditions.Count).SetFirstPriority
+    With Selection.FormatConditions(1).Interior
+        .PatternColorIndex = xlAutomatic
+        .Color = RGB(186, 200, 8)
+        .TintAndShade = 0
+    End With
+    Selection.FormatConditions(1).StopIfTrue = False
+    
+'Created by Brandon Laufer
+'DENOVO Final Output
+    'Remove Spaces From Prediction Tool Output
+    Sheets("DENOVO Prediction Tool").Select
+    lastRow = ActiveSheet.Cells.Find("*", SearchOrder:=xlByRows, SearchDirection:=xlPrevious).Row
+    Range("B1").Delete Shift:=xlUp
+    Range("C1").Delete Shift:=xlUp
+    Dim s As Range, t As Long, j As Long
+    Set s = ActiveSheet.Range("A1:C" & lastRow)
+    t = s.rows.Count
+    For j = t To 1 Step (-1)
+        If WorksheetFunction.CountA(s.rows(j)) = 0 Then s.rows(j).Delete
+    Next
+    
+    'Find Final Row of Peaks Final
+    RowLast = Sheets("DENOVO Final").Cells.Find("*", SearchOrder:=xlByRows, SearchDirection:=xlPrevious).Row
+
+    'Transfer pI/MW
+    Sheets("DENOVO Final").Range("N22:N" & RowLast).Value = Sheets("DENOVO Prediction Tool").Range("B1:B" & RowLast).Value
+    Sheets("DENOVO Final").Range("O22:O" & RowLast).Value = Sheets("DENOVO Prediction Tool").Range("C1:C" & RowLast).Value
+    
+    'Transfer SVM
+    Sheets("DENOVO Final").Range("T22:T" & RowLast).Value = Sheets("DENOVO AMP Prediction").Range("B1:B" & RowLast).Value
+    Sheets("DENOVO Final").Range("U22:U" & RowLast).Value = Sheets("DENOVO AMP Prediction").Range("C1:C" & RowLast).Value
+    
+    'Transfer RF
+    Sheets("DENOVO Final").Range("V22:V" & RowLast).Value = Sheets("DENOVO AMP Prediction").Range("E1:E" & RowLast).Value
+    Sheets("DENOVO Final").Range("W22:W" & RowLast).Value = Sheets("DENOVO AMP Prediction").Range("F1:F" & RowLast).Value
+
+    'Transfer ANN
+    Sheets("DENOVO Final").Range("X22:X" & RowLast).Value = Sheets("DENOVO AMP Prediction").Range("H1:H" & RowLast).Value
+
+    'Transfer DA
+    Sheets("DENOVO Final").Range("Y22:Y" & RowLast).Value = Sheets("DENOVO AMP Prediction").Range("J1:J" & RowLast).Value
+    Sheets("DENOVO Final").Range("Z22:Z" & RowLast).Value = Sheets("DENOVO AMP Prediction").Range("K1:K" & RowLast).Value
+
+    'Column Width & Borders
+    Sheets("DENOVO Final").Select
+    Columns("A:Z").AutoFit
+    RowLast = Sheets("DENOVO Final").Cells.Find("*", SearchOrder:=xlByRows, SearchDirection:=xlPrevious).Row
+    Sheets("DENOVO Final").Range("A21:Z" & RowLast).Select
+    With Selection.Borders
+        .LineStyle = xlContinuous
+        .ColorIndex = 0
+        .Weight = xlThin
+    End With
+
+    'Delete Excess Sheets
+    Application.DisplayAlerts = False
+    Sheets("DENOVO Prediction Tool").Delete
+    Application.DisplayAlerts = True
+    Application.DisplayAlerts = False
+    Sheets("DENOVO AMP Prediction").Delete
+    Application.DisplayAlerts = True
+
+    'Color Change
+    Sheets("DENOVO Final").Cells.Select
+    Selection.FormatConditions.Add Type:=xlCellValue, Operator:=xlEqual, _
+        Formula1:="=""AMP"""
+    Selection.FormatConditions(Selection.FormatConditions.Count).SetFirstPriority
+    With Selection.FormatConditions(1).Interior
+        .PatternColorIndex = xlAutomatic
+        .Color = RGB(186, 200, 8)
+        .TintAndShade = 0
+    End With
+    Selection.FormatConditions(1).StopIfTrue = False
+
+    'Delete Original
+    Application.DisplayAlerts = False
+    Sheets("Sheet").Delete
+    Application.DisplayAlerts = True
+    Application.DisplayAlerts = False
+    Sheets("Peaks FASTA").Delete
+    Application.DisplayAlerts = True
+    Application.DisplayAlerts = False
+    Sheets("DENOVO FASTA").Delete
+    Application.DisplayAlerts = True
+    
+'Sorting Everything
+    'Add Net Charge Sheet
+    Sheets.Add.Name = "Peaks Sorted by Charge"
+    
+    'Copy From Peaks Final
+    Sheets("Peaks Final").UsedRange.Copy Sheets("Peaks Sorted by Charge").Range("A1")
+    
+    'Sort by Charge
+    PLast = Sheets("Peaks Final").Cells.Find("*", SearchOrder:=xlByRows, SearchDirection:=xlPrevious).Row
+    Sheets("Peaks Sorted by Charge").Sort.SortFields.Add Key:=Range( _
+        "Q22:Q" & PLast), SortOn:=xlSortOnValues, Order:=xlAscending, DataOption:= _
+        xlSortNormal
+    With Sheets("Peaks Sorted by Charge").Sort
+        .SetRange Range("A22:Z" & PLast)
+        .Header = xlGuess
+        .MatchCase = False
+        .Orientation = xlTopToBottom
+        .SortMethod = xlPinYin
+        .Apply
+    End With
+
+    'Add Hydrophobicity Sheet
+    Sheets.Add.Name = "Peaks Sorted by Hydrophobicity"
+    
+    'Copy From Peaks Final
+    Sheets("Peaks Final").UsedRange.Copy Sheets("Peaks Sorted by Hydrophobicity").Range("A1")
+    
+    'Sort by Hydrophobicity
+    Sheets("Peaks Sorted by Hydrophobicity").Sort.SortFields.Add Key:=Range( _
+        "S22:S" & PLast), SortOn:=xlSortOnValues, Order:=xlAscending, DataOption:= _
+        xlSortNormal
+    With Sheets("Peaks Sorted by Hydrophobicity").Sort
+        .SetRange Range("A22:Z" & PLast)
+        .Header = xlGuess
+        .MatchCase = False
+        .Orientation = xlTopToBottom
+        .SortMethod = xlPinYin
+        .Apply
+    End With
+
+    'Add AMP Sorting Sheet
+    Sheets.Add.Name = "Peaks Sorted by AMP"
+    Sheets("Peaks Final").UsedRange.Copy Sheets("Peaks Sorted by AMP").Range("A1")
+    
+    'Sort by AMP
+    PLast = Sheets("Peaks Final").Cells.Find("*", SearchOrder:=xlByRows, SearchDirection:=xlPrevious).Row
+    For x = 22 To PLast Step 1
+        If Sheets("Peaks Sorted by AMP").Range("T" & x).Value = "AMP" Then Sheets("Peaks Sorted by AMP").Range("AA" & x) = 1
+        If Sheets("Peaks Sorted by AMP").Range("V" & x).Value = "AMP" Then Sheets("Peaks Sorted by AMP").Range("AB" & x) = 1
+        If Sheets("Peaks Sorted by AMP").Range("X" & x).Value = "AMP" Then Sheets("Peaks Sorted by AMP").Range("AC" & x) = 1
+        If Sheets("Peaks Sorted by AMP").Range("Y" & x).Value = "AMP" Then Sheets("Peaks Sorted by AMP").Range("AD" & x) = 1
+        Sheets("Peaks Sorted by AMP").Range("AE" & x) = "=SUM(RC[-4]:RC[-1])"
+    Next
+    Sheets("Peaks Sorted by AMP").Sort.SortFields.Add Key:=Range("AE22:AE" & PLast), SortOn:=xlSortOnValues, Order:=xlDescending, DataOption:=xlSortNormal
+    With Sheets("Peaks Sorted by AMP").Sort
+        .SetRange Range("A22:AE" & PLast)
+        .Header = xlGuess
+        .MatchCase = False
+        .Orientation = xlTopToBottom
+        .SortMethod = xlPinYin
+        .Apply
+    End With
+    Sheets("Peaks Sorted by AMP").Columns("AA:AE").Select
+    Selection.Delete
+
+    'Add Net Charge Sheet
+    Sheets.Add.Name = "DENOVO Sorted by Charge"
+    
+    'Copy From Peaks Final
+    Sheets("DENOVO Final").UsedRange.Copy Sheets("DENOVO Sorted by Charge").Range("A1")
+    
+    'Sort by Charge
+    DLast = Sheets("DENOVO Final").Cells.Find("*", SearchOrder:=xlByRows, SearchDirection:=xlPrevious).Row
+    Sheets("DENOVO Sorted by Charge").Sort.SortFields.Add Key:=Range( _
+        "Q22:Q" & DLast), SortOn:=xlSortOnValues, Order:=xlAscending, DataOption:= _
+        xlSortNormal
+    With Sheets("DENOVO Sorted by Charge").Sort
+        .SetRange Range("A22:Z" & DLast)
+        .Header = xlGuess
+        .MatchCase = False
+        .Orientation = xlTopToBottom
+        .SortMethod = xlPinYin
+        .Apply
+    End With
+
+    'Add Hydrophobicity Sheet
+    Sheets.Add.Name = "DENOVO Sorted by Hydrophobicity"
+    
+    'Copy From DENOVO Final
+    Sheets("DENOVO Final").UsedRange.Copy Sheets("DENOVO Sorted by Hydrophobicity").Range("A1")
+    
+    'Sort by Hydrophobicity
+    Sheets("DENOVO Sorted by Hydrophobicity").Sort.SortFields.Add Key:=Range( _
+        "S22:S" & DLast), SortOn:=xlSortOnValues, Order:=xlAscending, DataOption:= _
+        xlSortNormal
+    With Sheets("DENOVO Sorted by Hydrophobicity").Sort
+        .SetRange Range("A22:Z" & DLast)
+        .Header = xlGuess
+        .MatchCase = False
+        .Orientation = xlTopToBottom
+        .SortMethod = xlPinYin
+        .Apply
+    End With
+    
+    'Add AMP Sorting Sheet
+    Sheets.Add.Name = "DENOVO Sorted by AMP"
+    Sheets("Peaks Final").UsedRange.Copy Sheets("DENOVO Sorted by AMP").Range("A1")
+    
+    'Sort by AMP
+    PLast = Sheets("DENOVO Final").Cells.Find("*", SearchOrder:=xlByRows, SearchDirection:=xlPrevious).Row
+    For x = 22 To DLast Step 1
+        If Sheets("DENOVO Sorted by AMP").Range("T" & x).Value = "AMP" Then Sheets("DENOVO Sorted by AMP").Range("AA" & x) = 1
+        If Sheets("DENOVO Sorted by AMP").Range("V" & x).Value = "AMP" Then Sheets("DENOVO Sorted by AMP").Range("AB" & x) = 1
+        If Sheets("DENOVO Sorted by AMP").Range("X" & x).Value = "AMP" Then Sheets("DENOVO Sorted by AMP").Range("AC" & x) = 1
+        If Sheets("DENOVO Sorted by AMP").Range("Y" & x).Value = "AMP" Then Sheets("DENOVO Sorted by AMP").Range("AD" & x) = 1
+        Sheets("DENOVO Sorted by AMP").Range("AE" & x) = "=SUM(RC[-4]:RC[-1])"
+    Next
+    Sheets("DENOVO Sorted by AMP").Sort.SortFields.Add Key:=Range("AE22:AE" & DLast), SortOn:=xlSortOnValues, Order:=xlDescending, DataOption:=xlSortNormal
+    With Sheets("DENOVO Sorted by AMP").Sort
+        .SetRange Range("A22:AE" & DLast)
+        .Header = xlGuess
+        .MatchCase = False
+        .Orientation = xlTopToBottom
+        .SortMethod = xlPinYin
+        .Apply
+    End With
+    Sheets("DENOVO Sorted by AMP").Columns("AA:AE").Select
+    Selection.Delete
+    
+    Application.ScreenUpdating = True
+'Created by Brandon Laufer
+
+End Sub
