@@ -1,0 +1,439 @@
+Sub BandPlot()
+
+    Application.ScreenUpdating = False
+    
+    Dim ws As Worksheet
+    
+    'Begin the loop.
+    For Each ws In ActiveWorkbook.Worksheets
+        
+        RowLast = Int(ws.Cells.Find("*", SearchOrder:=xlByRows, SearchDirection:=xlPrevious).Row)
+        ColLast = Int(ws.Cells.Find("*", SearchOrder:=xlByColumns, SearchDirection:=xlPrevious).Column)
+        BandLast = "Q"
+        ws.Activate
+    
+        'Find Values of 100 and Remove
+        For Each x In Range("A1:" & BandLast & RowLast)
+            If x = 100 Then
+                x.ClearContents
+            End If
+        Next
+        
+        'Find Min and Max X-Values
+        Range("V3").Formula = "=ROUNDDOWN(MIN(B3:Q" & RowLast & "),1) - 0.1"
+        Range("V4").Formula = "=ROUNDUP(MAX(B3:Q" & RowLast & "),1)"
+        Range("W3").Formula = "=ROUNDDOWN(MIN(B3:Q" & RowLast & "),1) - 0.1"
+        Range("W4").Formula = "=V4 + 1"
+    
+        'Add Smooth Line Plot
+        ActiveSheet.Shapes.AddChart2(240, xlXYScatterSmoothNoMarkers).Select
+        With ActiveChart
+            .SeriesCollection.NewSeries
+            .FullSeriesCollection(1).XValues = "=" & ActiveSheet.Name & "!$A$3:$A$" & RowLast
+            .FullSeriesCollection(1).Values = "=" & ActiveSheet.Name & "!$B$3:$B$" & RowLast
+            .SeriesCollection.NewSeries
+            .FullSeriesCollection(2).XValues = "=" & ActiveSheet.Name & "!$A$3:$A$" & RowLast
+            .FullSeriesCollection(2).Values = "=" & ActiveSheet.Name & "!$C$3:$C$" & RowLast
+            .SeriesCollection.NewSeries
+            .FullSeriesCollection(3).XValues = "=" & ActiveSheet.Name & "!$A$3:$A$" & RowLast
+            .FullSeriesCollection(3).Values = "=" & ActiveSheet.Name & "!$D$3:$D$" & RowLast
+            .SeriesCollection.NewSeries
+            .FullSeriesCollection(4).XValues = "=" & ActiveSheet.Name & "!$A$3:$A$" & RowLast
+            .FullSeriesCollection(4).Values = "=" & ActiveSheet.Name & "!$E$3:$E$" & RowLast
+            .SeriesCollection.NewSeries
+            .FullSeriesCollection(5).XValues = "=" & ActiveSheet.Name & "!$A$3:$A$" & RowLast
+            .FullSeriesCollection(5).Values = "=" & ActiveSheet.Name & "!$F$3:$F$" & RowLast
+            .SeriesCollection.NewSeries
+            .FullSeriesCollection(6).XValues = "=" & ActiveSheet.Name & "!$A$3:$A$" & RowLast
+            .FullSeriesCollection(6).Values = "=" & ActiveSheet.Name & "!$G$3:$G$" & RowLast
+            .SeriesCollection.NewSeries
+            .FullSeriesCollection(7).XValues = "=" & ActiveSheet.Name & "!$A$3:$A$" & RowLast
+            .FullSeriesCollection(7).Values = "=" & ActiveSheet.Name & "!$H$3:$H$" & RowLast
+            .SeriesCollection.NewSeries
+            .FullSeriesCollection(8).XValues = "=" & ActiveSheet.Name & "!$A$3:$A$" & RowLast
+            .FullSeriesCollection(8).Values = "=" & ActiveSheet.Name & "!$I$3:$I$" & RowLast
+            .SeriesCollection.NewSeries
+            .FullSeriesCollection(9).XValues = "=" & ActiveSheet.Name & "!$A$3:$A$" & RowLast
+            .FullSeriesCollection(9).Values = "=" & ActiveSheet.Name & "!$J$3:$J$" & RowLast
+            .SeriesCollection.NewSeries
+            .FullSeriesCollection(10).XValues = "=" & ActiveSheet.Name & "!$A$3:$A$" & RowLast
+            .FullSeriesCollection(10).Values = "=" & ActiveSheet.Name & "!$K$3:$K$" & RowLast
+            .SeriesCollection.NewSeries
+            .FullSeriesCollection(11).XValues = "=" & ActiveSheet.Name & "!$A$3:$A$" & RowLast
+            .FullSeriesCollection(11).Values = "=" & ActiveSheet.Name & "!$L$3:$L$" & RowLast
+            .SeriesCollection.NewSeries
+            .FullSeriesCollection(12).XValues = "=" & ActiveSheet.Name & "!$A$3:$A$" & RowLast
+            .FullSeriesCollection(12).Values = "=" & ActiveSheet.Name & "!$M$3:$M$" & RowLast
+            .SeriesCollection.NewSeries
+            .FullSeriesCollection(13).XValues = "=" & ActiveSheet.Name & "!$A$3:$A$" & RowLast
+            .FullSeriesCollection(13).Values = "=" & ActiveSheet.Name & "!$N$3:$N$" & RowLast
+            .SeriesCollection.NewSeries
+            .FullSeriesCollection(14).XValues = "=" & ActiveSheet.Name & "!$A$3:$A$" & RowLast
+            .FullSeriesCollection(14).Values = "=" & ActiveSheet.Name & "!$O$3:$O$" & RowLast
+            .SeriesCollection.NewSeries
+            .FullSeriesCollection(15).XValues = "=" & ActiveSheet.Name & "!$A$3:$A$" & RowLast
+            .FullSeriesCollection(15).Values = "=" & ActiveSheet.Name & "!$P$3:$P$" & RowLast
+            .SeriesCollection.NewSeries
+            .FullSeriesCollection(16).Name = "Fermi Level"
+            .FullSeriesCollection(16).XValues = "=" & ActiveSheet.Name & "!$A$3:$A$" & RowLast
+            .FullSeriesCollection(16).Values = "=" & ActiveSheet.Name & "!$Q$3:$Q$" & RowLast
+        End With
+    
+        'Find How Many Vertical Lines Are Needed
+        VertCount = Cells(Rows.Count, "T").End(xlUp).Row
+    
+        'Add Vertical Lines
+        If VertCount = 24 Then
+            With ActiveChart
+                .SeriesCollection.NewSeries
+                .FullSeriesCollection(17).Name = "=" & ActiveSheet.Name & "!$S$3"
+                .FullSeriesCollection(17).XValues = "=" & ActiveSheet.Name & "!$T$3:$T$4"
+                .FullSeriesCollection(17).Values = "=" & ActiveSheet.Name & "!$W$3:$W$4"
+                .SeriesCollection.NewSeries
+                .FullSeriesCollection(18).XValues = "=" & ActiveSheet.Name & "!$T5:$T6"
+                .FullSeriesCollection(18).Values = "=" & ActiveSheet.Name & "!$W$3:$W$4"
+                .FullSeriesCollection(18).Name = "=" & ActiveSheet.Name & "!$S5"
+                .SeriesCollection.NewSeries
+                .FullSeriesCollection(19).XValues = "=" & ActiveSheet.Name & "!$T7:$T8"
+                .FullSeriesCollection(19).Values = "=" & ActiveSheet.Name & "!$W$3:$W$4"
+                .FullSeriesCollection(19).Name = "=" & ActiveSheet.Name & "!$S7"
+                .SeriesCollection.NewSeries
+                .FullSeriesCollection(20).XValues = "=" & ActiveSheet.Name & "!$T9:$T10"
+                .FullSeriesCollection(20).Values = "=" & ActiveSheet.Name & "!$W$3:$W$4"
+                .FullSeriesCollection(20).Name = "=" & ActiveSheet.Name & "!$S9"
+                .SeriesCollection.NewSeries
+                .FullSeriesCollection(21).XValues = "=" & ActiveSheet.Name & "!$T11:$T12"
+                .FullSeriesCollection(21).Values = "=" & ActiveSheet.Name & "!$W$3:$W$4"
+                .FullSeriesCollection(21).Name = "=" & ActiveSheet.Name & "!$S11"
+                .SeriesCollection.NewSeries
+                .FullSeriesCollection(22).XValues = "=" & ActiveSheet.Name & "!$T13:$T14"
+                .FullSeriesCollection(22).Values = "=" & ActiveSheet.Name & "!$W$3:$W$4"
+                .FullSeriesCollection(22).Name = "=" & ActiveSheet.Name & "!$S13"
+                .SeriesCollection.NewSeries
+                .FullSeriesCollection(23).XValues = "=" & ActiveSheet.Name & "!$T15:$T16"
+                .FullSeriesCollection(23).Values = "=" & ActiveSheet.Name & "!$W$3:$W$4"
+                .FullSeriesCollection(23).Name = "=" & ActiveSheet.Name & "!$S15"
+                .SeriesCollection.NewSeries
+                .FullSeriesCollection(24).XValues = "=" & ActiveSheet.Name & "!$T17:$T18"
+                .FullSeriesCollection(24).Values = "=" & ActiveSheet.Name & "!$W$3:$W$4"
+                .FullSeriesCollection(24).Name = "=" & ActiveSheet.Name & "!$S17"
+                .SeriesCollection.NewSeries
+                .FullSeriesCollection(25).XValues = "=" & ActiveSheet.Name & "!$T19:$T20"
+                .FullSeriesCollection(25).Values = "=" & ActiveSheet.Name & "!$W$3:$W$4"
+                .FullSeriesCollection(25).Name = "=" & ActiveSheet.Name & "!$S19"
+                .SeriesCollection.NewSeries
+                .FullSeriesCollection(26).XValues = "=" & ActiveSheet.Name & "!$T21:$T22"
+                .FullSeriesCollection(26).Values = "=" & ActiveSheet.Name & "!$W$3:$W$4"
+                .FullSeriesCollection(26).Name = "=" & ActiveSheet.Name & "!$S21"
+                .SeriesCollection.NewSeries
+                .FullSeriesCollection(27).XValues = "=" & ActiveSheet.Name & "!$T23:$T24"
+                .FullSeriesCollection(27).Values = "=" & ActiveSheet.Name & "!$W$3:$W$4"
+                .FullSeriesCollection(27).Name = "=" & ActiveSheet.Name & "!$S23"
+            End With
+        
+            'Format Chart
+            With ActiveChart
+                .SetElement (msoElementChartTitleNone) 'Remove Chart Title
+                .SetElement (msoElementPrimaryValueGridLinesNone) 'Remove Grid Lines
+                .SetElement (msoElementPrimaryCategoryGridLinesNone) 'Remove Grid Lines
+                .SetElement (msoElementLegendNone) 'Remove Legend
+                .Axes(xlCategory).TickLabelPosition = xlNone 'Remove X-Axis Labels
+                .Axes(xlValue, xlPrimary).HasTitle = True 'Add Y-Axis Title
+                .Axes(xlValue, xlPrimary).AxisTitle.Characters.Text = "Energy (Ry)" 'Name Y-Axis
+                'Scale X-Axis
+                With .Axes(xlCategory)
+                    .MinimumScale = 0
+                    .MaximumScale = Range("T24")
+                End With
+                'Scale Y-Axis
+                With .Axes(xlValue)
+                    .MinimumScale = Range("V3")
+                    .MaximumScale = Range("V4")
+                    .TickLabels.NumberFormat = "0.0"
+                    .CrossesAt = Range("V3")
+                End With
+            End With
+        
+            'Change Line Color and Add Data Labels
+            With ActiveChart.FullSeriesCollection(16).Format.Line
+                .Visible = msoTrue
+                .ForeColor.ObjectThemeColor = msoThemeColorText1
+                .ForeColor.TintAndShade = 0
+                .ForeColor.Brightness = 0
+                .Transparency = 0
+                .DashStyle = msoLineDash
+            End With
+        
+            For x = 17 To 27
+                With ActiveChart.FullSeriesCollection(x).Format.Line
+                    .Visible = msoTrue
+                    .ForeColor.ObjectThemeColor = msoThemeColorText1
+                    .ForeColor.TintAndShade = 0
+                    .ForeColor.Brightness = 0
+                    .Transparency = 0
+                End With
+                ActiveChart.FullSeriesCollection(x).ApplyDataLabels
+                With ActiveChart.FullSeriesCollection(x).DataLabels
+                    .ShowSeriesName = True
+                    .ShowValue = False
+                End With
+                ActiveChart.FullSeriesCollection(x).HasLeaderLines = False
+                ActiveChart.FullSeriesCollection(x).DataLabels.Position = xlLabelPositionBelow
+            Next
+            
+            'Remove Lines For Vectors
+            For x = 18 To 27 Step 2
+                ActiveChart.FullSeriesCollection(x).Format.Line.Visible = msoFalse
+            Next
+        
+        ElseIf VertCount = 30 Then
+            With ActiveChart
+                .SeriesCollection.NewSeries
+                .FullSeriesCollection(17).Name = "=" & ActiveSheet.Name & "!$S$3"
+                .FullSeriesCollection(17).XValues = "=" & ActiveSheet.Name & "!$T$3:$T$4"
+                .FullSeriesCollection(17).Values = "=" & ActiveSheet.Name & "!$W$3:$W$4"
+                .SeriesCollection.NewSeries
+                .FullSeriesCollection(18).XValues = "=" & ActiveSheet.Name & "!$T5:$T6"
+                .FullSeriesCollection(18).Values = "=" & ActiveSheet.Name & "!$W$3:$W$4"
+                .FullSeriesCollection(18).Name = "=" & ActiveSheet.Name & "!$S5"
+                .SeriesCollection.NewSeries
+                .FullSeriesCollection(19).XValues = "=" & ActiveSheet.Name & "!$T7:$T8"
+                .FullSeriesCollection(19).Values = "=" & ActiveSheet.Name & "!$W$3:$W$4"
+                .FullSeriesCollection(19).Name = "=" & ActiveSheet.Name & "!$S7"
+                .SeriesCollection.NewSeries
+                .FullSeriesCollection(20).XValues = "=" & ActiveSheet.Name & "!$T9:$T10"
+                .FullSeriesCollection(20).Values = "=" & ActiveSheet.Name & "!$W$3:$W$4"
+                .FullSeriesCollection(20).Name = "=" & ActiveSheet.Name & "!$S9"
+                .SeriesCollection.NewSeries
+                .FullSeriesCollection(21).XValues = "=" & ActiveSheet.Name & "!$T11:$T12"
+                .FullSeriesCollection(21).Values = "=" & ActiveSheet.Name & "!$W$3:$W$4"
+                .FullSeriesCollection(21).Name = "=" & ActiveSheet.Name & "!$S11"
+                .SeriesCollection.NewSeries
+                .FullSeriesCollection(22).XValues = "=" & ActiveSheet.Name & "!$T13:$T14"
+                .FullSeriesCollection(22).Values = "=" & ActiveSheet.Name & "!$W$3:$W$4"
+                .FullSeriesCollection(22).Name = "=" & ActiveSheet.Name & "!$S13"
+                .SeriesCollection.NewSeries
+                .FullSeriesCollection(23).XValues = "=" & ActiveSheet.Name & "!$T15:$T16"
+                .FullSeriesCollection(23).Values = "=" & ActiveSheet.Name & "!$W$3:$W$4"
+                .FullSeriesCollection(23).Name = "=" & ActiveSheet.Name & "!$S15"
+                .SeriesCollection.NewSeries
+                .FullSeriesCollection(24).XValues = "=" & ActiveSheet.Name & "!$T17:$T18"
+                .FullSeriesCollection(24).Values = "=" & ActiveSheet.Name & "!$W$3:$W$4"
+                .FullSeriesCollection(24).Name = "=" & ActiveSheet.Name & "!$S17"
+                .SeriesCollection.NewSeries
+                .FullSeriesCollection(25).XValues = "=" & ActiveSheet.Name & "!$T19:$T20"
+                .FullSeriesCollection(25).Values = "=" & ActiveSheet.Name & "!$W$3:$W$4"
+                .FullSeriesCollection(25).Name = "=" & ActiveSheet.Name & "!$S19"
+                .SeriesCollection.NewSeries
+                .FullSeriesCollection(26).XValues = "=" & ActiveSheet.Name & "!$T21:$T22"
+                .FullSeriesCollection(26).Values = "=" & ActiveSheet.Name & "!$W$3:$W$4"
+                .FullSeriesCollection(26).Name = "=" & ActiveSheet.Name & "!$S21"
+                .SeriesCollection.NewSeries
+                .FullSeriesCollection(27).XValues = "=" & ActiveSheet.Name & "!$T23:$T24"
+                .FullSeriesCollection(27).Values = "=" & ActiveSheet.Name & "!$W$3:$W$4"
+                .FullSeriesCollection(27).Name = "=" & ActiveSheet.Name & "!$S23"
+                .SeriesCollection.NewSeries
+                .FullSeriesCollection(28).XValues = "=" & ActiveSheet.Name & "!$T25:$T26"
+                .FullSeriesCollection(28).Values = "=" & ActiveSheet.Name & "!$W$3:$W$4"
+                .FullSeriesCollection(28).Name = "=" & ActiveSheet.Name & "!$S25"
+                .SeriesCollection.NewSeries
+                .FullSeriesCollection(29).XValues = "=" & ActiveSheet.Name & "!$T27:$T28"
+                .FullSeriesCollection(29).Values = "=" & ActiveSheet.Name & "!$W$3:$W$4"
+                .FullSeriesCollection(29).Name = "=" & ActiveSheet.Name & "!$S27"
+                .SeriesCollection.NewSeries
+                .FullSeriesCollection(30).XValues = "=" & ActiveSheet.Name & "!$T29:$T30"
+                .FullSeriesCollection(30).Values = "=" & ActiveSheet.Name & "!$W$3:$W$4"
+                .FullSeriesCollection(30).Name = "=" & ActiveSheet.Name & "!$S29"
+            End With
+        
+            'Format Chart
+            With ActiveChart
+                .SetElement (msoElementChartTitleNone) 'Remove Chart Title
+                .SetElement (msoElementPrimaryValueGridLinesNone) 'Remove Grid Lines
+                .SetElement (msoElementPrimaryCategoryGridLinesNone) 'Remove Grid Lines
+                .SetElement (msoElementLegendNone) 'Remove Legend
+                .Axes(xlCategory).TickLabelPosition = xlNone 'Remove X-Axis Labels
+                .Axes(xlValue, xlPrimary).HasTitle = True 'Add Y-Axis Title
+                .Axes(xlValue, xlPrimary).AxisTitle.Characters.Text = "Energy (Ry)" 'Name Y-Axis
+                'Scale X-Axis
+                With .Axes(xlCategory)
+                    .MinimumScale = 0
+                    .MaximumScale = Range("T30")
+                End With
+                'Scale Y-Axis
+                With .Axes(xlValue)
+                    .MinimumScale = Range("V3")
+                    .MaximumScale = Range("V4")
+                    .TickLabels.NumberFormat = "0.0"
+                    .CrossesAt = Range("V3")
+                    End With
+            End With
+        
+            'Change Line Color and Add Data Labels
+            With ActiveChart.FullSeriesCollection(16).Format.Line
+                .Visible = msoTrue
+                .ForeColor.ObjectThemeColor = msoThemeColorText1
+                .ForeColor.TintAndShade = 0
+                .ForeColor.Brightness = 0
+                .Transparency = 0
+                .DashStyle = msoLineDash
+            End With
+        
+            For x = 17 To 30
+                With ActiveChart.FullSeriesCollection(x).Format.Line
+                    .Visible = msoTrue
+                    .ForeColor.ObjectThemeColor = msoThemeColorText1
+                    .ForeColor.TintAndShade = 0
+                    .ForeColor.Brightness = 0
+                    .Transparency = 0
+                End With
+                ActiveChart.FullSeriesCollection(x).ApplyDataLabels
+                With ActiveChart.FullSeriesCollection(x).DataLabels
+                    .ShowSeriesName = True
+                    .ShowValue = False
+                End With
+                ActiveChart.FullSeriesCollection(x).HasLeaderLines = False
+                ActiveChart.FullSeriesCollection(x).DataLabels.Position = xlLabelPositionBelow
+            Next
+            
+            'Remove Lines For Vectors
+            For x = 18 To 26 Step 2
+                ActiveChart.FullSeriesCollection(x).Format.Line.Visible = msoFalse
+            Next
+            ActiveChart.FullSeriesCollection(29).Format.Line.Visible = msoFalse
+        
+        ElseIf VertCount = 32 Then
+            With ActiveChart
+                .SeriesCollection.NewSeries
+                .FullSeriesCollection(17).Name = "=" & ActiveSheet.Name & "!$S$3"
+                .FullSeriesCollection(17).XValues = "=" & ActiveSheet.Name & "!$T$3:$T$4"
+                .FullSeriesCollection(17).Values = "=" & ActiveSheet.Name & "!$W$3:$W$4"
+                .SeriesCollection.NewSeries
+                .FullSeriesCollection(18).XValues = "=" & ActiveSheet.Name & "!$T5:$T6"
+                .FullSeriesCollection(18).Values = "=" & ActiveSheet.Name & "!$W$3:$W$4"
+                .FullSeriesCollection(18).Name = "=" & ActiveSheet.Name & "!$S5"
+                .SeriesCollection.NewSeries
+                .FullSeriesCollection(19).XValues = "=" & ActiveSheet.Name & "!$T7:$T8"
+                .FullSeriesCollection(19).Values = "=" & ActiveSheet.Name & "!$W$3:$W$4"
+                .FullSeriesCollection(19).Name = "=" & ActiveSheet.Name & "!$S7"
+                .SeriesCollection.NewSeries
+                .FullSeriesCollection(20).XValues = "=" & ActiveSheet.Name & "!$T9:$T10"
+                .FullSeriesCollection(20).Values = "=" & ActiveSheet.Name & "!$W$3:$W$4"
+                .FullSeriesCollection(20).Name = "=" & ActiveSheet.Name & "!$S9"
+                .SeriesCollection.NewSeries
+                .FullSeriesCollection(21).XValues = "=" & ActiveSheet.Name & "!$T11:$T12"
+                .FullSeriesCollection(21).Values = "=" & ActiveSheet.Name & "!$W$3:$W$4"
+                .FullSeriesCollection(21).Name = "=" & ActiveSheet.Name & "!$S11"
+                .SeriesCollection.NewSeries
+                .FullSeriesCollection(22).XValues = "=" & ActiveSheet.Name & "!$T13:$T14"
+                .FullSeriesCollection(22).Values = "=" & ActiveSheet.Name & "!$W$3:$W$4"
+                .FullSeriesCollection(22).Name = "=" & ActiveSheet.Name & "!$S13"
+                .SeriesCollection.NewSeries
+                .FullSeriesCollection(23).XValues = "=" & ActiveSheet.Name & "!$T15:$T16"
+                .FullSeriesCollection(23).Values = "=" & ActiveSheet.Name & "!$W$3:$W$4"
+                .FullSeriesCollection(23).Name = "=" & ActiveSheet.Name & "!$S15"
+                .SeriesCollection.NewSeries
+                .FullSeriesCollection(24).XValues = "=" & ActiveSheet.Name & "!$T17:$T18"
+                .FullSeriesCollection(24).Values = "=" & ActiveSheet.Name & "!$W$3:$W$4"
+                .FullSeriesCollection(24).Name = "=" & ActiveSheet.Name & "!$S17"
+                .SeriesCollection.NewSeries
+                .FullSeriesCollection(25).XValues = "=" & ActiveSheet.Name & "!$T19:$T20"
+                .FullSeriesCollection(25).Values = "=" & ActiveSheet.Name & "!$W$3:$W$4"
+                .FullSeriesCollection(25).Name = "=" & ActiveSheet.Name & "!$S19"
+                .SeriesCollection.NewSeries
+                .FullSeriesCollection(26).XValues = "=" & ActiveSheet.Name & "!$T21:$T22"
+                .FullSeriesCollection(26).Values = "=" & ActiveSheet.Name & "!$W$3:$W$4"
+                .FullSeriesCollection(26).Name = "=" & ActiveSheet.Name & "!$S21"
+                .SeriesCollection.NewSeries
+                .FullSeriesCollection(27).XValues = "=" & ActiveSheet.Name & "!$T23:$T24"
+                .FullSeriesCollection(27).Values = "=" & ActiveSheet.Name & "!$W$3:$W$4"
+                .FullSeriesCollection(27).Name = "=" & ActiveSheet.Name & "!$S23"
+                .SeriesCollection.NewSeries
+                .FullSeriesCollection(28).XValues = "=" & ActiveSheet.Name & "!$T25:$T26"
+                .FullSeriesCollection(28).Values = "=" & ActiveSheet.Name & "!$W$3:$W$4"
+                .FullSeriesCollection(28).Name = "=" & ActiveSheet.Name & "!$S25"
+                .SeriesCollection.NewSeries
+                .FullSeriesCollection(29).XValues = "=" & ActiveSheet.Name & "!$T27:$T28"
+                .FullSeriesCollection(29).Values = "=" & ActiveSheet.Name & "!$W$3:$W$4"
+                .FullSeriesCollection(29).Name = "=" & ActiveSheet.Name & "!$S27"
+                .SeriesCollection.NewSeries
+                .FullSeriesCollection(30).XValues = "=" & ActiveSheet.Name & "!$T29:$T30"
+                .FullSeriesCollection(30).Values = "=" & ActiveSheet.Name & "!$W$3:$W$4"
+                .FullSeriesCollection(30).Name = "=" & ActiveSheet.Name & "!$S29"
+                .SeriesCollection.NewSeries
+                .FullSeriesCollection(31).XValues = "=" & ActiveSheet.Name & "!$T31:$T32"
+                .FullSeriesCollection(31).Values = "=" & ActiveSheet.Name & "!$W$3:$W$4"
+                .FullSeriesCollection(31).Name = "=" & ActiveSheet.Name & "!$S31"
+            End With
+        
+            'Format Chart
+            With ActiveChart
+                .SetElement (msoElementChartTitleNone) 'Remove Chart Title
+                .SetElement (msoElementPrimaryValueGridLinesNone) 'Remove Grid Lines
+                .SetElement (msoElementPrimaryCategoryGridLinesNone) 'Remove Grid Lines
+                .SetElement (msoElementLegendNone) 'Remove Legend
+                .Axes(xlCategory).TickLabelPosition = xlNone 'Remove X-Axis Labels
+                .Axes(xlValue, xlPrimary).HasTitle = True 'Add Y-Axis Title
+                .Axes(xlValue, xlPrimary).AxisTitle.Characters.Text = "Energy (Ry)" 'Name Y-Axis
+                'Scale X-Axis
+                With .Axes(xlCategory)
+                    .MinimumScale = 0
+                    .MaximumScale = Range("T32")
+                End With
+                'Scale Y-Axis
+                With .Axes(xlValue)
+                    .MinimumScale = Range("V3")
+                    .MaximumScale = Range("V4")
+                    .TickLabels.NumberFormat = "0.0"
+                    .CrossesAt = Range("V3")
+                End With
+            End With
+        
+            'Change Line Color and Add Data Labels
+            With ActiveChart.FullSeriesCollection(16).Format.Line
+                .Visible = msoTrue
+                .ForeColor.ObjectThemeColor = msoThemeColorText1
+                .ForeColor.TintAndShade = 0
+                .ForeColor.Brightness = 0
+                .Transparency = 0
+                .DashStyle = msoLineDash
+            End With
+        
+            For x = 17 To 31
+                With ActiveChart.FullSeriesCollection(x).Format.Line
+                    .Visible = msoTrue
+                    .ForeColor.ObjectThemeColor = msoThemeColorText1
+                    .ForeColor.TintAndShade = 0
+                    .ForeColor.Brightness = 0
+                    .Transparency = 0
+                End With
+                ActiveChart.FullSeriesCollection(x).ApplyDataLabels
+                With ActiveChart.FullSeriesCollection(x).DataLabels
+                    .ShowSeriesName = True
+                    .ShowValue = False
+                End With
+                ActiveChart.FullSeriesCollection(x).HasLeaderLines = False
+                ActiveChart.FullSeriesCollection(x).DataLabels.Position = xlLabelPositionBelow
+            Next
+            
+            'Remove Lines For Vectors
+            For x = 18 To 30 Step 2
+                ActiveChart.FullSeriesCollection(x).Format.Line.Visible = msoFalse
+            Next
+    
+        Else
+            MsgBox ("Unknown Structure, Plot Will Not Be Performed")
+            
+        End If
+            
+        'Raise Bottom of Plot Area to Show Data Labels
+        With ActiveChart.PlotArea
+            .Top = 2.5
+            .Height = 200
+        End With
+    
+    Next ws
+
+    Application.ScreenUpdating = False
+
+End Sub

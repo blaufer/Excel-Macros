@@ -1,0 +1,290 @@
+Sub DOS_Plot()
+
+    Application.ScreenUpdating = False
+    
+    Dim ws As Worksheet
+    
+    'Begin the loop.
+    For Each ws In ActiveWorkbook.Worksheets
+        
+        RowLast = Int(ws.Cells.Find("*", SearchOrder:=xlByRows, SearchDirection:=xlPrevious).Row)
+        ColLast = Int(ws.Cells.Find("*", SearchOrder:=xlByColumns, SearchDirection:=xlPrevious).Column)
+        ws.Activate
+        
+        'Plots With Monoatomic Materials
+        If ColLast = 11 Then
+        
+            'Add Column Titles
+            Range("B2").FormulaR1C1 = "Energy (Ry)"
+            Range("C2").FormulaR1C1 = "# of Electrons"
+            Range("D2").FormulaR1C1 = "Total DOS"
+            Range("E2").FormulaR1C1 = "DOS - s"
+            Range("F2").FormulaR1C1 = "DOS - p"
+            Range("G2").FormulaR1C1 = "DOS - eg"
+            Range("H2").FormulaR1C1 = "DOS - t2g"
+            Range("I2").FormulaR1C1 = "DOS - f"
+            
+            'Find X and Y Axis Values
+            y = 4
+            For x = 3 To RowLast
+                If Range("D" & x) <> 0 Then
+                    Range("K7").Formula = "=ROUNDDOWN(B" & x & ",2)"
+                End If
+                If Range("K7") <> 0 Then
+                    Exit For
+                End If
+                y = y + 1
+            Next
+            
+            For x = RowLast To y Step -1
+                If Range("D" & x) = 0 Then
+                      Range("K8").Formula = "=ROUNDUP(B" & x & ",2)"
+                End If
+                If Range("K8") <> 0 Then
+                    Exit For
+                End If
+            Next
+            
+            Range("K9").Formula = "=ROUNDUP(MAX(D3:D" & RowLast & "),0)"
+            Range("L3").Formula = 0
+            Range("L4").Formula = "=ROUNDUP(MAX(D3:D" & RowLast & "),0)"
+
+            'Add Chart
+            ActiveSheet.Shapes.AddChart2(240, xlXYScatterSmoothNoMarkers).Select
+            With ActiveChart
+                .SeriesCollection.NewSeries
+                .FullSeriesCollection(1).Name = "=""Total DOS"""
+                .FullSeriesCollection(1).XValues = "=" & ActiveSheet.Name & "!$B$3:$B$" & RowLast
+                .FullSeriesCollection(1).Values = "=" & ActiveSheet.Name & "!$D$3:$D$" & RowLast
+                .SeriesCollection.NewSeries
+                .FullSeriesCollection(2).Name = "=""DOS - s"""
+                .FullSeriesCollection(2).XValues = "=" & ActiveSheet.Name & "!$B$3:$B$" & RowLast
+                .FullSeriesCollection(2).Values = "=" & ActiveSheet.Name & "!$E$3:$E$" & RowLast
+                .SeriesCollection.NewSeries
+                .FullSeriesCollection(3).Name = "=""DOS - p"""
+                .FullSeriesCollection(3).XValues = "=" & ActiveSheet.Name & "!$B$3:$B$" & RowLast
+                .FullSeriesCollection(3).Values = "=" & ActiveSheet.Name & "!$F$3:$F$" & RowLast
+                .SeriesCollection.NewSeries
+                .FullSeriesCollection(4).Name = "=""DOS - eg"""
+                .FullSeriesCollection(4).XValues = "=" & ActiveSheet.Name & "!$B$3:$B$" & RowLast
+                .FullSeriesCollection(4).Values = "=" & ActiveSheet.Name & "!$G$3:$G$" & RowLast
+                .SeriesCollection.NewSeries
+                .FullSeriesCollection(5).Name = "=""DOS - t2g"""
+                .FullSeriesCollection(5).XValues = "=" & ActiveSheet.Name & "!$B$3:$B$" & RowLast
+                .FullSeriesCollection(5).Values = "=" & ActiveSheet.Name & "!$H$3:$H$" & RowLast
+                .SeriesCollection.NewSeries
+                .FullSeriesCollection(6).Name = "=""DOS - f"""
+                .FullSeriesCollection(6).XValues = "=" & ActiveSheet.Name & "!$B$3:$B$" & RowLast
+                .FullSeriesCollection(6).Values = "=" & ActiveSheet.Name & "!$I$3:$I$" & RowLast
+                .SeriesCollection.NewSeries
+                .FullSeriesCollection(7).Name = "=""Fermi Level"""
+                .FullSeriesCollection(7).XValues = "=" & ActiveSheet.Name & "!$K$3:$K$4"
+                .FullSeriesCollection(7).Values = "=" & ActiveSheet.Name & "!$L$3:$L$4"
+                .FullSeriesCollection(7).Select
+            End With
+            With Selection.Format.Line
+                .Visible = msoTrue
+                .ForeColor.ObjectThemeColor = msoThemeColorText1
+                .ForeColor.TintAndShade = 0
+                .ForeColor.Brightness = 0
+                .Transparency = 0
+                .DashStyle = msoLineDash
+            End With
+
+            'Chart Elements
+            
+            'Remove Chart Title
+            ActiveChart.SetElement (msoElementChartTitleNone)
+            
+            'Remove Grid Lines
+            ActiveChart.SetElement (msoElementPrimaryValueGridLinesNone)
+            ActiveChart.SetElement (msoElementPrimaryCategoryGridLinesNone)
+            
+            'Add Legend
+            ActiveChart.HasLegend = True
+            ActiveChart.Legend.IncludeInLayout = False
+            Application.CommandBars("Format Object").Visible = False
+            ActiveChart.Legend.Left = 290
+            ActiveChart.Legend.Top = 5
+            
+            'X-Axis Name and Scaling
+            ActiveChart.Axes(xlCategory, xlPrimary).HasTitle = True
+            ActiveChart.Axes(xlCategory, xlPrimary).AxisTitle.Characters.Text = "Energy (Ry)"
+            With ActiveChart.Axes(xlCategory)
+                .MinimumScale = Range("K7")
+                .MaximumScale = Range("K8")
+                .CrossesAt = Range("K7")
+                .TickLabels.NumberFormat = "0.0"
+            End With
+
+            'Y-Axis Name and Scaling
+            ActiveChart.Axes(xlValue, xlPrimary).HasTitle = True
+            ActiveChart.Axes(xlValue, xlPrimary).AxisTitle.Characters.Text = "States*Ry-1*atom-1"
+            ActiveChart.Axes(xlValue, xlPrimary).AxisTitle.Select
+            With Selection.Format.TextFrame2.TextRange.Characters(10, 2).Font
+                .BaselineOffset = 0.3
+            End With
+            With Selection.Format.TextFrame2.TextRange.Characters(17, 2).Font
+                .BaselineOffset = 0.3
+            End With
+            With ActiveChart.Axes(xlValue)
+                .MinimumScale = 0
+                .MaximumScale = Range("K9")
+                .TickLabels.NumberFormat = "0"
+            End With
+
+
+        'Plots With Diatomic Materials
+        Else
+        
+            'Add Column Titles
+            Range("B2").FormulaR1C1 = "Energy (Ry)"
+            Range("C2").FormulaR1C1 = "# of Electrons"
+            Range("D2").FormulaR1C1 = "Total DOS"
+            Range("E2").FormulaR1C1 = "s"
+            Range("F2").FormulaR1C1 = "p"
+            Range("G2").FormulaR1C1 = "eg"
+            Range("H2").FormulaR1C1 = "t2g"
+            Range("I2").FormulaR1C1 = "f"
+            Range("J2").FormulaR1C1 = "s"
+            Range("K2").FormulaR1C1 = "p"
+            Range("L2").FormulaR1C1 = "eg"
+            Range("M2").FormulaR1C1 = "t2g"
+            Range("N2").FormulaR1C1 = "f"
+            Range("O2").FormulaR1C1 = "DOS - s"
+            Range("P2").FormulaR1C1 = "DOS - p"
+            Range("Q2").FormulaR1C1 = "DOS - eg"
+            Range("R2").FormulaR1C1 = "DOS - t2g"
+            Range("S2").FormulaR1C1 = "DOS - f"
+            Range("O1").FormulaR1C1 = "Total"
+            Range("O1:S1").Merge
+
+            'Hide Columns
+            Columns("E:N").Select
+            Selection.EntireColumn.Hidden = True
+
+            'Add Formulas for Totals
+            For x = 3 To RowLast
+                Range("O" & x).FormulaR1C1 = "=RC[-10]+RC[-5]"
+                Range("P" & x).FormulaR1C1 = "=RC[-10]+RC[-5]"
+                Range("Q" & x).FormulaR1C1 = "=RC[-10]+RC[-5]"
+                Range("R" & x).FormulaR1C1 = "=RC[-10]+RC[-5]"
+                Range("S" & x).FormulaR1C1 = "=RC[-10]+RC[-5]"
+            Next
+            
+            'Find X and Y Axis Values
+            y = 4
+            For x = 3 To RowLast
+                If Range("D" & x) <> 0 Then
+                      Range("U7").Formula = "=ROUNDDOWN(B" & x & ",2)"
+                End If
+                If Range("U7") <> 0 Then
+                    Exit For
+                End If
+                y = y + 1
+            Next
+            
+            For x = RowLast To y Step -1
+                If Range("D" & x) = 0 Then
+                      Range("U8").Formula = "=ROUNDUP(B" & x & ",2)"
+                End If
+                If Range("U8") <> 0 Then
+                    Exit For
+                End If
+            Next
+            
+            Range("U9").Formula = "=ROUNDUP(MAX(D3:D" & RowLast & "),0)"
+            Range("V3").Formula = 0
+            Range("V4").Formula = "=ROUNDUP(MAX(D3:D" & RowLast & "),0)"
+
+            'Add Chart
+            ActiveSheet.Shapes.AddChart2(240, xlXYScatterSmoothNoMarkers).Select
+            With ActiveChart
+                .SeriesCollection.NewSeries
+                .FullSeriesCollection(1).Name = "=""Total DOS"""
+                .FullSeriesCollection(1).XValues = "=" & ActiveSheet.Name & "!$B$3:$B$" & RowLast
+                .FullSeriesCollection(1).Values = "=" & ActiveSheet.Name & "!$D$3:$D$" & RowLast
+                .SeriesCollection.NewSeries
+                .FullSeriesCollection(2).Name = "=""DOS - s"""
+                .FullSeriesCollection(2).XValues = "=" & ActiveSheet.Name & "!$B$3:$B$" & RowLast
+                .FullSeriesCollection(2).Values = "=" & ActiveSheet.Name & "!$O$3:$O$" & RowLast
+                .SeriesCollection.NewSeries
+                .FullSeriesCollection(3).Name = "=""DOS - p"""
+                .FullSeriesCollection(3).XValues = "=" & ActiveSheet.Name & "!$B$3:$B$" & RowLast
+                .FullSeriesCollection(3).Values = "=" & ActiveSheet.Name & "!$P$3:$P$" & RowLast
+                .SeriesCollection.NewSeries
+                .FullSeriesCollection(4).Name = "=""DOS - eg"""
+                .FullSeriesCollection(4).XValues = "=" & ActiveSheet.Name & "!$B$3:$B$" & RowLast
+                .FullSeriesCollection(4).Values = "=" & ActiveSheet.Name & "!$Q$3:$Q$" & RowLast
+                .SeriesCollection.NewSeries
+                .FullSeriesCollection(5).Name = "=""DOS - t2g"""
+                .FullSeriesCollection(5).XValues = "=" & ActiveSheet.Name & "!$B$3:$B$" & RowLast
+                .FullSeriesCollection(5).Values = "=" & ActiveSheet.Name & "!$R$3:$R$" & RowLast
+                .SeriesCollection.NewSeries
+                .FullSeriesCollection(6).Name = "=""DOS - f"""
+                .FullSeriesCollection(6).XValues = "=" & ActiveSheet.Name & "!$B$3:$B$" & RowLast
+                .FullSeriesCollection(6).Values = "=" & ActiveSheet.Name & "!$S$3:$S$" & RowLast
+                .SeriesCollection.NewSeries
+                .FullSeriesCollection(7).Name = "=""Fermi Level"""
+                .FullSeriesCollection(7).XValues = "=" & ActiveSheet.Name & "!$U$3:$U$4"
+                .FullSeriesCollection(7).Values = "=" & ActiveSheet.Name & "!$V$3:$V$4"
+                .FullSeriesCollection(7).Select
+            End With
+            With Selection.Format.Line
+                .Visible = msoTrue
+                .ForeColor.ObjectThemeColor = msoThemeColorText1
+                .ForeColor.TintAndShade = 0
+                .ForeColor.Brightness = 0
+                .Transparency = 0
+                .DashStyle = msoLineDash
+            End With
+
+            'Chart Elements
+            
+            'Remove Chart Title
+            ActiveChart.SetElement (msoElementChartTitleNone)
+            
+            'Remove Grid Lines
+            ActiveChart.SetElement (msoElementPrimaryValueGridLinesNone)
+            ActiveChart.SetElement (msoElementPrimaryCategoryGridLinesNone)
+            
+            'Add Legend
+            ActiveChart.HasLegend = True
+            ActiveChart.Legend.IncludeInLayout = False
+            Application.CommandBars("Format Object").Visible = False
+            ActiveChart.Legend.Left = 290
+            ActiveChart.Legend.Top = 5
+            
+            'X-Axis Name and Scaling
+            ActiveChart.Axes(xlCategory, xlPrimary).HasTitle = True
+            ActiveChart.Axes(xlCategory, xlPrimary).AxisTitle.Characters.Text = "Energy (Ry)"
+            With ActiveChart.Axes(xlCategory)
+                .MinimumScale = Range("U7")
+                .MaximumScale = Range("U8")
+                .CrossesAt = Range("U7")
+                .TickLabels.NumberFormat = "0.0"
+            End With
+
+            'Y-Axis Name and Scaling
+            ActiveChart.Axes(xlValue, xlPrimary).HasTitle = True
+            ActiveChart.Axes(xlValue, xlPrimary).AxisTitle.Characters.Text = "States*Ry-1*atom-1"
+            ActiveChart.Axes(xlValue, xlPrimary).AxisTitle.Select
+            With Selection.Format.TextFrame2.TextRange.Characters(10, 2).Font
+                .BaselineOffset = 0.3
+            End With
+            With Selection.Format.TextFrame2.TextRange.Characters(17, 2).Font
+                .BaselineOffset = 0.3
+            End With
+            With ActiveChart.Axes(xlValue)
+                .MinimumScale = 0
+                .MaximumScale = Range("U9")
+                .TickLabels.NumberFormat = "0"
+            End With
+
+        End If
+    
+    Next ws
+    
+    Application.ScreenUpdating = True
+    
+End Sub
